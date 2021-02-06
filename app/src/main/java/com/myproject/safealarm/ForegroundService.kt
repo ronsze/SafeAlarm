@@ -36,7 +36,6 @@ class ForegroundService : Service() {
             connectSocket()
         }
         return START_STICKY
-
     }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun connectSocket(){
@@ -52,13 +51,8 @@ class ForegroundService : Service() {
                 Log.e("소켓 오류", e.toString())
             }
             mSocket.connect()
-            CoroutineScope(Dispatchers.IO).launch {
-                mSocket.emit("Hello", "Hello")
-                delay(5000L)
-            }
             mSocket.on(Socket.EVENT_CONNECT, onConnectSocket)
             mSocket.on(Socket.EVENT_DISCONNECT, onDiscconectSocket)
-            mSocket.on("ss", onSS)
         }
     }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -67,9 +61,6 @@ class ForegroundService : Service() {
     }
     val onDiscconectSocket = Emitter.Listener {
         connectSocket()
-    }
-    val onSS = Emitter.Listener {
-        Log.e("sex", "sex")
     }
 
     private fun startForegroundService(){
