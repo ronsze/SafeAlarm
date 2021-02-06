@@ -15,10 +15,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
+        <activity android:name=".MissingInfoActivity"></activity>
+        <activity android:name=".WardSettingActivity" />
+        <activity android:name=".WardHelpActivity" />
+        <activity android:name=".GuardSettingActivity" />
+        <activity android:name=".GuardHelpActivity" />
+        <activity
+            android:name=".GuardMapActivity"
+            android:label="@string/title_activity_guard_map"
+            android:theme="@style/NoActionBar" />
+
         <service
             android:name=".ForegroundService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity android:name=".LoadingActivity">
             <intent-filter>

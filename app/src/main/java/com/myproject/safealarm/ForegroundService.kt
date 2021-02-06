@@ -45,24 +45,28 @@ class ForegroundService : Service() {
     inner class socketThread: Thread(){
         override fun run(){
             try{
+                mSocket.connect()
                 Log.e("소켓 생성", "성공")
             }catch(e: Exception){
                 Log.e("소켓 생성", "실패")
                 Log.e("소켓 오류", e.toString())
             }
-            mSocket.connect()
             mSocket.on(Socket.EVENT_CONNECT, onConnectSocket)
             mSocket.on(Socket.EVENT_DISCONNECT, onDiscconectSocket)
+            mSocket.on("destDisconnect", onDestDisconnect)
         }
     }
-//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     val onConnectSocket = Emitter.Listener {
         mSocket.emit("enterRoom", App.prefs.room)
     }
     val onDiscconectSocket = Emitter.Listener {
         connectSocket()
     }
-
+    val onDestDisconnect = Emitter.Listener { 
+        //상대방 연결 끊김
+    }
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun startForegroundService(){
         val notification = NotificationFile.createNotification(this)
         startForeground(NOTIFICATION_ID, notification)
