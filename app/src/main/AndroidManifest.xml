@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:name=".App"
@@ -40,6 +42,9 @@
         <activity android:name=".WardActivity" />
         <activity android:name=".GuardActivity" />
         <activity android:name=".RegistActivity" />
+        <meta-data
+            android:name="com.naver.maps.map.CLIENT_ID"
+            android:value="99mlf08z2p" />
     </application>
 
 </manifest>

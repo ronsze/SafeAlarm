@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
@@ -34,7 +35,7 @@ class RegistActivity : AppCompatActivity() {
     fun showGuardDialog(){
         val builder = AlertDialog.Builder(this)
 
-        builder.setTitle("피보호자 화면에 입력해주세요.\n등록이 끝날때까지 창을 닫지마세요.")
+        builder.setTitle("피보호자 화면에 입력해주세요.\n입력 후 확인을 눌러주세요.")
         builder.setMessage("ID : ${App.prefs.id}")
         var dialog_listener = object: DialogInterface.OnClickListener{
             override fun onClick(dialog: DialogInterface?, which: Int){

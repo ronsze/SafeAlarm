@@ -1,17 +1,35 @@
 package com.myproject.safealarm
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import com.myproject.safealarm.databinding.ActivityGuardBinding
 
 class GuardActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityGuardBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_guard)
+        binding = ActivityGuardBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
-        var btn = findViewById<Button>(R.id.help_btn)
-        btn.setOnClickListener {
-            ForegroundService
+        binding.locationBtn.setOnClickListener {
+            startActivity(Intent(this, GuardMapActivity::class.java))
+        }
+
+        binding.helpBtn.setOnClickListener {
+            val intent = Intent(this@GuardActivity, ForegroundService::class.java)
+            intent.action = Actions.HELP_CALL_GUARD
+            startService(intent)
+        }
+
+        binding.settingBtn.setOnClickListener {
+            startActivity(Intent(this, GuardSettingActivity::class.java))
+        }
+
+        binding.infoBtn.setOnClickListener {
+            startActivity(Intent(this, MissingInfoActivity::class.java))
         }
     }
 }

@@ -8,6 +8,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 data class ResponseDC(var result: String? = null)
+data class ResponseMissing(val photo: String? = null,
+                           val info: String? = null,
+                           val time: String? = null,
+                           val look: String? = null,
+                           val other: String? = null)
 
 interface APIInterface{
     @FormUrlEncoded
@@ -22,6 +27,18 @@ interface APIInterface{
     @POST("/regist/ward")
     fun registWard(@Field("id")id: String,
                    @Field("code")code: String): Call<ResponseDC>
+
+    @FormUrlEncoded
+    @GET("/db/missingInfo")
+    fun missingInfoGet(@Field("id")id: Int): Call<ResponseDC>
+
+    @FormUrlEncoded
+    @POST("/db/missingInfo")
+    fun missingInfoPost(@Field("photo")photo: String,
+                        @Field("info")info: String,
+                        @Field("time")time: String,
+                        @Field("look")look: String,
+                        @Field("other")other: String): Call<ResponseDC>
 }
 
 object Singleton{
