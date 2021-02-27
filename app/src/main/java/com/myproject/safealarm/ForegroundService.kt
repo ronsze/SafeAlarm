@@ -153,10 +153,13 @@ class ForegroundService : Service() {
 
     private fun getLatLng(){      //좌표 구하는 함수
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        var currentLoc: Location? = null
+        var currentLoc_G: Location? = null
+        var currentLoc_N: Location? = null
+        var userLocation: Location
         var latitude: Double?
         var longitude: Double?
-        var userLocation: Location
+        var accuracy: Double
+
         var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
         var hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
@@ -166,21 +169,24 @@ class ForegroundService : Service() {
             val locationProvider_G = LocationManager.GPS_PROVIDER
             val locationProvider_N = LocationManager.NETWORK_PROVIDER
             Log.d("좌표 함수", "함수실행")
-            currentLoc = locationManager?.getLastKnownLocation(locationProvider_G)
-            if(currentLoc == null){
-                currentLoc = locationManager?.getLastKnownLocation(locationProvider_N)
-                if(currentLoc == null){
-                    Log.d("좌표 함수", "함수실행")
-                    latitude = 0.0
-                    longitude = 0.0
-                }else{
-                    Log.d("좌표 함수", "함수실행")
-                    userLocation = currentLoc
-                    latitude = userLocation.latitude
-                    longitude = userLocation.longitude
-                }
+            currentLoc_G = locationManager?.getLastKnownLocation(locationProvider_G)
+            currentLoc_N = locationManager?.getLastKnownLocation(locationProvider_N)
+            if(currentLoc_G == null && currentLoc_N == null){
+                Log.d("좌표 함수", "함수실행")
+                latitude = 0.0
+                longitude = 0.0
             }else{
-                userLocation = currentLoc
+                if(currentLoc_G == null){
+                    userLocation = currentLoc_G!!
+                }else if(currentLoc_N == null){
+                    userLocation = currentLoc_N!!
+                }else{
+                    if(currentLoc_G.accuracy > currentLoc_N.accuracy){
+                        userLocation = currentLoc_G!!
+                    }else{
+                       userLocation = currentLoc_N!!
+                    }
+                }
                 latitude = userLocation.latitude
                 longitude = userLocation.longitude
             }
