@@ -17,11 +17,69 @@ import retrofit2.Response
 class LoadingActivity : AppCompatActivity() {
     val context = this
     var REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
         Log.d("역할", App.prefs.role)
         checkPermission()
+    }
+
+    private fun readPref(){
+        val isReg = App.prefs.regKey
+        if(App.prefs.idOn){
+            if(isReg){
+                Log.d("로그", "1")
+                moveActivity()
+            }else{
+                Log.d("로그", "2")
+                createId()
+            }
+        }else{
+            createId()
+        }
+    }
+
+    private fun createId(){                 //ID 생성
+        var rNum = Random().nextInt(100000) + 1
+        Singleton.server.fConnect(rNum.toString()).enqueue(object:Callback<ResponseDC>{
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                createId()
+            }
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                startActivity(Intent(context, RegistActivity::class.java))
+                finish()
+            }
+        })
+        App.prefs.idOn = true
+        App.prefs.id = rNum.toString()
+    }
+    private fun moveActivity(){             //액티비티 이동
+        if(App.prefs.role == "Guard"){
+            startActivity(Intent(this, GuardActivity::class.java))
+        }else{
+            startActivity(Intent(this, WardActivity::class.java))
+        }
+        finish()
+    }
+
+    private fun checkPermission(){          //권한 체크
+        val hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
+                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED){
+            readPref()
+        }else{
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])){
+                Toast.makeText(this, "앱을 실행하려면 위치 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
+            }else{
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -45,67 +103,5 @@ class LoadingActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-    private fun checkPermission(){
-        var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-            Manifest.permission.ACCESS_FINE_LOCATION)
-        var hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-
-        if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED){
-            readPref()
-        }else{
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])){
-                Toast.makeText(this, "앱을 실행하려면 위치 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
-            }else{
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
-            }
-        }
-    }
-
-    private fun readPref(){
-        Log.d("id생성", "${App.prefs.idOn}, ${App.prefs.id}")
-        val isReg = App.prefs.regKey
-        Log.d("역할", App.prefs.role)
-        if(App.prefs.idOn){
-            if(isReg){
-                moveActivity()
-            }else{
-                createId()
-            }
-        }else{
-            createId()
-        }
-    }
-
-    private fun createId(){
-        var rNum = Random().nextInt(100000) + 1
-        Singleton.server.fConnect(rNum.toString()).enqueue(object:Callback<ResponseDC>{
-            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-                Log.d("에러", t.toString())
-                createId()
-            }
-            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                Log.d("접속", "${response.body()!!.result!!.toBoolean()}, ${rNum}")
-                Log.d("액티비티 이동", "로딩->등록")
-                startActivity(Intent(context, RegistActivity::class.java))
-                finish()
-            }
-        })
-        App.prefs.idOn = true
-        App.prefs.id = rNum.toString()
-    }
-    private fun moveActivity(){
-        Log.d("역할", App.prefs.role)
-        if(App.prefs.role == "Guard"){
-            Log.d("액티비티 이동", "로딩->보호자")
-            startActivity(Intent(this, GuardActivity::class.java))
-        }else{
-            Log.d("액티비티 이동", "로딩->피보호자")
-            startActivity(Intent(this, WardActivity::class.java))
-        }
-        finish()
     }
 }

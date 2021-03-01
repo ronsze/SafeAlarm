@@ -1,11 +1,9 @@
 package com.myproject.safealarm
 
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
@@ -18,6 +16,7 @@ import retrofit2.Response
 class RegistActivity : AppCompatActivity() {
     private val context = this
     private lateinit var binding: ActivityRegistBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegistBinding.inflate(layoutInflater)
@@ -30,9 +29,9 @@ class RegistActivity : AppCompatActivity() {
         binding.WardBtn.setOnClickListener {
             showWardDialog()
         }
-
     }
-    fun showGuardDialog(){
+
+    fun showGuardDialog(){                      //보호자 다이어로그
         val builder = AlertDialog.Builder(this)
 
         builder.setTitle("피보호자 화면에 입력해주세요.\n입력 후 확인을 눌러주세요.")
@@ -50,7 +49,8 @@ class RegistActivity : AppCompatActivity() {
         builder.setPositiveButton("취소", null)
         builder.show()
     }
-    fun showWardDialog(){
+
+    fun showWardDialog(){                       //피보호자 다이어로그
         val builder = AlertDialog.Builder(this)
         val et = EditText(this)
         builder.setMessage("보호자 화면의 코드를 입력해주세요.")
@@ -69,7 +69,7 @@ class RegistActivity : AppCompatActivity() {
         builder.show()
     }
 
-    fun registGuard(){
+    fun registGuard(){                          //보호자 등록
         Singleton.server.registGuard(App.prefs.id).enqueue(object:Callback<ResponseDC>{
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.d("보호자 등록", "실패")
@@ -85,7 +85,7 @@ class RegistActivity : AppCompatActivity() {
         })
     }
 
-    fun registWard(code: String){
+    fun registWard(code: String){                  //피보호자 등록
         Singleton.server.registWard(App.prefs.id, code).enqueue(object:Callback<ResponseDC>{
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.d("피보호자 등록", "실패")
@@ -102,17 +102,15 @@ class RegistActivity : AppCompatActivity() {
         })
     }
 
-    fun startForeService(){
+    fun startForeService(){                 //Foregroud서비스 시작
         val foreIntent = Intent(this@RegistActivity, ForegroundService::class.java)
         foreIntent.action = Actions.START_FOREGROUND
-        Log.d("Foreground서비스", "Foreground서비스 시작")
         startService(foreIntent)
         moveActivity()
     }
 
-    fun moveActivity(){
+    fun moveActivity(){                     //액티비티 이동
         startActivity(Intent(this, LoadingActivity::class.java))
-        Log.d("액티비티 이동", "등록->로딩")
         finish()
     }
 }

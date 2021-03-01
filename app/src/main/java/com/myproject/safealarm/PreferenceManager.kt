@@ -10,7 +10,17 @@ class PreferenceManager(context: Context) {
     val REGIST_KEY = "regKey"
     val ROLE_KEY = "role"
     val ROOM_NUM = "room"
+    val SAVE_LAT = "s_lat"
+    val SAVE_LNG = "s_lng"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
+
+    var s_lat: String
+        get() = prefs.getString(SAVE_LAT, "33.38")!!
+        set(value) = prefs.edit().putString(SAVE_LAT, value).apply()
+
+    var s_lng: String
+        get() = prefs.getString(SAVE_LNG, "126.55")!!
+        set(value) = prefs.edit().putString(SAVE_LNG, value).apply()
 
     var id: String
         get() = prefs.getString(ID, "")!!

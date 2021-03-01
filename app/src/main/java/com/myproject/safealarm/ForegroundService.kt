@@ -6,14 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.*
-import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
-import com.google.gson.JsonObject
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -23,15 +19,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
-import java.util.*
 
 class ForegroundService : Service() {
-    val mSocket = IO.socket(MyAddress.url)
-    val role = App.prefs.role
-    lateinit var socketT: socketThread
-    var locationManager: LocationManager? = null
-    var locationCount = 0
+    private val mSocket = IO.socket(MyAddress.url)
+    private val role = App.prefs.role
+    private lateinit var socketT: socketThread
+    private var locationManager: LocationManager? = null
+    private var locationCount = 0
+    private var add = 0.0005
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action){
@@ -60,7 +55,7 @@ class ForegroundService : Service() {
         }
         return START_STICKY
     }
-//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ통신 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun connectSocket(){
         socketT = socketThread()
         socketT.run()
@@ -69,10 +64,8 @@ class ForegroundService : Service() {
         override fun run(){
             try{
                 mSocket.connect()
-                Log.e("소켓 생성", "성공")
             }catch(e: Exception){
-                Log.e("소켓 생성", "실패")
-                Log.e("소켓 오류", e.toString())
+                e.printStackTrace()
             }
             mSocket.on(Socket.EVENT_CONNECT, onConnectSocket)
             mSocket.on(Socket.EVENT_DISCONNECT, onDiscconectSocket)
@@ -80,31 +73,22 @@ class ForegroundService : Service() {
             mSocket.on("requestLoc", onRequestLoc)
             mSocket.on("test", onTest)
             mSocket.on("callbackLoc", onCallbackLoc)
+
             if(role == "Guard"){
-                CoroutineScope(Dispatchers.IO).launch {
-                    while(true){
-                        delay(5000)
-                        mSocket.emit("requestLoc")
-                        if(locationCount >= 3){
-                            //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
-                            Log.e("위치 요청", "응답 없음 3회")
-                        }
-                        locationCount += 1
-                    }
-                }
+                sendLocReq()
             }
         }
     }
 
-    fun helpCall_W(){
-        mSocket.emit("HelpCall_W")
-    }
-
-    fun helpCall_G(){
+    private fun helpCall_G(){                                   //보호자 도움 요청
         mSocket.emit("HelpCall_G")
     }
 
-    val onTest = Emitter.Listener {
+    private fun helpCall_W(){                                   //피보호자 도움 요청
+        mSocket.emit("HelpCall_W")
+    }
+
+    private val onTest = Emitter.Listener {
         if(role == "Guard"){
             Log.d("이벤트","테스트 보호자")
         }else{
@@ -112,67 +96,56 @@ class ForegroundService : Service() {
         }
     }
 
-    val onConnectSocket = Emitter.Listener {
-        //최초 연걸
+    private val onConnectSocket = Emitter.Listener {            //최초 연걸
         Log.d("이벤트","최초 연결")
         mSocket.emit("enterRoom", App.prefs.room)
     }
-    val onDiscconectSocket = Emitter.Listener {
-        //연결 해제
+    private val onDiscconectSocket = Emitter.Listener {         //연결 해제
         Log.d("이벤트","연결 해제")
         connectSocket()
     }
-    val onDestDisconnect = Emitter.Listener {
-        //상대방 연결 끊김
+    private val onDestDisconnect = Emitter.Listener {           //상대방 연결 끊김
         Log.d("이벤트","상대방 연결 끊김")
     }
-    val onRequestLoc = Emitter.Listener {
-        //좌표 요청
-        Log.d("이벤트","좌표 요청 받음")
+    private val onRequestLoc = Emitter.Listener {               //좌표 요청
         if(role == "Ward"){
             getLatLng()
         }
     }
-    val onCallbackLoc = Emitter.Listener { 
-        //좌표 받음
+    private val onCallbackLoc = Emitter.Listener {              //좌표 받음
         locationCount = 0
         if(role == "Guard"){
-            Log.e("좌표 받음", "받음")
             var location = it[0].toString()
             try{
                 val `object` = JSONObject(location)
-                var latitude = `object`.getString("latitude")
-                var longitude = `object`.getString("longitude")
-                Log.d("좌표 받음", "위도 : ${latitude}, 경도 : ${longitude}")
+                var latitude = `object`.getString("latitude").toDouble()
+                var longitude = `object`.getString("longitude").toDouble()
+                cngMapLocation(latitude, longitude)
             }catch(e: JSONException){
-                Log.e("좌표 받음", "에러 ${e}")
+                e.printStackTrace()
             }
         }
     }
-//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    private fun getLatLng(){      //좌표 구하는 함수
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ위치 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    private fun getLatLng(){                    //좌표 구하는 함수
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
         var currentLoc_G: Location? = null
         var currentLoc_N: Location? = null
         var userLocation: Location
         var latitude: Double?
         var longitude: Double?
-        var accuracy: Double
-
         var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
         var hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION)
+
         if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
                 hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED){
             val locationProvider_G = LocationManager.GPS_PROVIDER
             val locationProvider_N = LocationManager.NETWORK_PROVIDER
-            Log.d("좌표 함수", "함수실행")
             currentLoc_G = locationManager?.getLastKnownLocation(locationProvider_G)
             currentLoc_N = locationManager?.getLastKnownLocation(locationProvider_N)
             if(currentLoc_G == null && currentLoc_N == null){
-                Log.d("좌표 함수", "함수실행")
                 latitude = 0.0
                 longitude = 0.0
             }else{
@@ -192,49 +165,38 @@ class ForegroundService : Service() {
             }
             var json = JSONObject()
             try{
-                Log.d("좌표 전송", "위도 : ${latitude}, 경도 : ${longitude}")
-                json.put("latitude", latitude)
-                json.put("longitude", longitude)
+                json.put("latitude", latitude + add)
+                json.put("longitude", longitude + add)
+                add += 0.0005
             }catch(e: JSONException){
                 e.printStackTrace()
             }
             mSocket.emit("callbackLoc", json)
         }
+    }
+    private fun cngMapLocation(latitude: Double, longitude: Double){
+        var intent = Intent(App.CNG_LOC)
+        intent.putExtra("latitude", latitude)
+        intent.putExtra("longitude", longitude)
+        App.prefs.s_lat = latitude.toString()
+        App.prefs.s_lng = longitude.toString()
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    val mLocationListener = object: LocationListener{
-        override fun onLocationChanged(location: Location) {
-            var longitude: Double?
-            var latitude: Double?
-            var json = JSONObject()
-            if(location.provider == LocationManager.GPS_PROVIDER){
-                longitude = location.longitude
-                latitude = location.latitude
-                Log.d("CheckCurrentLocation", "GPS현재 내 위치 값: ${latitude}, ${longitude}")
-            }else{
-                longitude = location.longitude
-                latitude = location.latitude
-                Log.d("CheckCurrentLocation", "NETWORK현재 내 위치 값: ${latitude}, ${longitude}")
+    private fun sendLocReq(){
+        CoroutineScope(Dispatchers.IO).launch {
+            while(true){
+                delay(5000)
+                mSocket.emit("requestLoc")
+                if(locationCount >= 3){
+                    //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
+                    Log.e("위치 요청", "응답 없음 3회")
+                }
+                locationCount += 1
             }
-            try{
-                json.put("latitude", latitude)
-                json.put("longitude", longitude)
-            }catch(e: JSONException){
-                e.printStackTrace()
-            }
-            mSocket.emit("callbackLoc", json)
-        }
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            super.onStatusChanged(provider, status, extras)
-        }
-        override fun onProviderEnabled(provider: String) {
-            super.onProviderEnabled(provider)
-        }
-        override fun onProviderDisabled(provider: String) {
-            super.onProviderDisabled(provider)
         }
     }
-//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ서비스 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun startForegroundService(){
         val notification = NotificationFile.createNotification(this)
         startForeground(NOTIFICATION_ID, notification)
