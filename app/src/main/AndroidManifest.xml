@@ -45,7 +45,7 @@
         <activity android:name=".RegistActivity" />
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="99mlf08z2p"/>
+            android:value="YOUR CLIENT ID"/>
     </application>
 
 </manifest>
