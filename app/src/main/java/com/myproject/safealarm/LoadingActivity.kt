@@ -21,7 +21,6 @@ class LoadingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
-        Log.d("역할", App.prefs.role)
         checkPermission()
     }
 
@@ -29,10 +28,8 @@ class LoadingActivity : AppCompatActivity() {
         val isReg = App.prefs.regKey
         if(App.prefs.idOn){
             if(isReg){
-                Log.d("로그", "1")
                 moveActivity()
             }else{
-                Log.d("로그", "2")
                 createId()
             }
         }else{
@@ -54,6 +51,7 @@ class LoadingActivity : AppCompatActivity() {
         App.prefs.idOn = true
         App.prefs.id = rNum.toString()
     }
+
     private fun moveActivity(){             //액티비티 이동
         if(App.prefs.role == "Guard"){
             startActivity(Intent(this, GuardActivity::class.java))

@@ -19,9 +19,7 @@ class GuardActivity : AppCompatActivity() {
         }
 
         binding.helpBtn.setOnClickListener {
-            val intent = Intent(this@GuardActivity, ForegroundService::class.java)
-            intent.action = Actions.HELP_CALL_GUARD
-            startService(intent)
+            startActivity(Intent(this, GuardHelpActivity::class.java))
         }
 
         binding.settingBtn.setOnClickListener {

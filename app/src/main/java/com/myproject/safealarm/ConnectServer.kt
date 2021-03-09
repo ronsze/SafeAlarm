@@ -1,7 +1,5 @@
 package com.myproject.safealarm
 
-import io.socket.client.IO
-import io.socket.client.Socket
 import retrofit2.Call
 import retrofit2.http.*
 import retrofit2.Retrofit
@@ -34,7 +32,8 @@ interface APIInterface{
 
     @FormUrlEncoded
     @POST("/db/missingInfo")
-    fun missingInfoPost(@Field("photo")photo: String,
+    fun missingInfoPost(@Field("id")id: String,
+                        @Field("photo")photo: String,
                         @Field("info")info: String,
                         @Field("time")time: String,
                         @Field("look")look: String,
@@ -42,7 +41,6 @@ interface APIInterface{
 }
 
 object Singleton{
-
     val url = MyAddress.url
     val retrofit = Retrofit.Builder()
         .baseUrl(url)

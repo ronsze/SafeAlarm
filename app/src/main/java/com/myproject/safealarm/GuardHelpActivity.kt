@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import com.myproject.safealarm.databinding.ActivityGuardBinding
 import com.myproject.safealarm.databinding.ActivityGuardHelpBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -51,7 +50,7 @@ class GuardHelpActivity : AppCompatActivity() {
     }
 
     private fun sendInfo(){
-        Singleton.server.missingInfoPost("photo","info", "time",
+        Singleton.server.missingInfoPost(App.prefs.id,"photo","info", "time",
                 "look", "other").enqueue(object:Callback<ResponseDC>{
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
 
