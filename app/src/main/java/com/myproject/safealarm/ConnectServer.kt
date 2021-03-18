@@ -1,5 +1,8 @@
 package com.myproject.safealarm
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
 import retrofit2.Retrofit
@@ -28,16 +31,16 @@ interface APIInterface{
 
     @FormUrlEncoded
     @GET("/db/missingInfo")
-    fun missingInfoGet(@Field("id")id: Int): Call<ResponseDC>
+    fun missingInfoGet(@Field("id")id: Int): Call<ResponseMissing>
 
-    @FormUrlEncoded
+    @Multipart
     @POST("/db/missingInfo")
-    fun missingInfoPost(@Field("id")id: String,
-                        @Field("photo")photo: String,
-                        @Field("info")info: String,
-                        @Field("time")time: String,
-                        @Field("look")look: String,
-                        @Field("other")other: String): Call<ResponseDC>
+    fun postMissingInfo(@Part("id")id: String,
+                        @Part photo: MultipartBody,
+                        @Part("info")info: String,
+                        @Part("time")time: String,
+                        @Part("look")look: String,
+                        @Part("other")other: String): Call<ResponseDC>
 }
 
 object Singleton{

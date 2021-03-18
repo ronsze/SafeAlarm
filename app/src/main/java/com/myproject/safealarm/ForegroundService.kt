@@ -29,6 +29,9 @@ class ForegroundService : Service() {
     private var locationManager: LocationManager? = null
     private var locationCount = 0
     private var add = 0.0005
+    private val lat_1km: Double = 1.0/110.9875
+    private val lng_1km: Double = 1.0/88.3435
+    private var isOutOfRange = false
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -45,9 +48,7 @@ class ForegroundService : Service() {
                 mSocket.emit("HelpCall_W")
             }
         }
-        if (mSocket.connected()) {
-
-        } else {
+        if (!mSocket.connected()) {
             connectSocket()
         }
         return START_STICKY
@@ -99,7 +100,7 @@ class ForegroundService : Service() {
     private val onDestDisconnect = Emitter.Listener {           //상대방 연결 끊김
         Log.d("이벤트", "상대방 연결 끊김")
         if(role == "Guard"){
-            DisconnectAlarm()
+            disconnectAlarm()
         }
     }
     private val onRequestLoc = Emitter.Listener {               //좌표 요청
@@ -107,20 +108,7 @@ class ForegroundService : Service() {
             getLatLng()
         }
     }
-    private val onCallbackLoc = Emitter.Listener {              //좌표 받음
-        locationCount = 0
-        if (role == "Guard") {
-            var location = it[0].toString()
-            try {
-                val `object` = JSONObject(location)
-                var latitude = `object`.getString("latitude").toDouble()
-                var longitude = `object`.getString("longitude").toDouble()
-                cngMapLocation(latitude, longitude)
-            } catch (e: JSONException) {
-                e.printStackTrace()
-            }
-        }
-    }
+
     private val onOutOfRange = Emitter.Listener {               //지정 범위 이탈
         Log.d("이벤트", "상대방 범위 이탈")
         if(role == "Guard") {
@@ -134,7 +122,21 @@ class ForegroundService : Service() {
             receiveHelpCall()
         }
     }
-
+    private val onCallbackLoc = Emitter.Listener {              //좌표 받음
+        locationCount = 0
+        if (role == "Guard") {
+            var location = it[0].toString()
+            try {
+                val `object` = JSONObject(location)
+                val latitude = `object`.getString("latitude").toDouble()
+                val longitude = `object`.getString("longitude").toDouble()
+                cngMapLocation(latitude, longitude)
+                checkRange(latitude, longitude)
+            } catch (e: JSONException) {
+                e.printStackTrace()
+            }
+        }
+    }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ위치 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun getLatLng() {                                   //피보호자 좌표 구하는 함수
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
@@ -191,30 +193,47 @@ class ForegroundService : Service() {
         App.prefs.s_lat = latitude.toString()
         App.prefs.s_lng = longitude.toString()
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-        checkOutOfRange(latitude, longitude)
     }
 
     private fun sendLocReq() {                                              //위치 요청
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                delay(5000)
+                delay(10000)
                 mSocket.emit("requestLoc")
                 if (locationCount >= 3) {
                     //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
                     Log.e("위치 요청", "응답 없음 3회")
-                    FaildReceiveLocAlram()
+                    faildReceiveLocAlram()
                 }
                 locationCount += 1
             }
         }
     }
-    private fun checkOutOfRange(latitude: Double, longitude: Double){       //범위 이탈 확인
-
+    private fun checkRange(lat: Double, lng: Double){                       //범위 이탈 확인
+        if(lat < (App.prefs.center_lat.toDouble()-(lat_1km*App.prefs.range_km))
+            || lng < (App.prefs.center_lng.toDouble()-(lng_1km*App.prefs.range_km))
+            || lat > (App.prefs.center_lat.toDouble()+(lat_1km*App.prefs.range_km))
+            || lng > (App.prefs.center_lng.toDouble()+(lng_1km*App.prefs.range_km))){
+            if(!isOutOfRange){
+                OutOfRangeAlarm()
+                isOutOfRange = true
+            }
+        }else{
+            if(isOutOfRange){
+                inOfRangeAlarm()
+            }
+            isOutOfRange = false
+        }
     }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ알람 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-    private fun DisconnectAlarm(){
+    private fun disconnectAlarm(){
         vibratorAlarm()
         val notification = NotificationFile.createNotification(this, "피보호자와 연결이 끊어졌습니다.")
+        startForeground(NOTIFICATION_ID, notification)
+    }
+    private fun inOfRangeAlarm(){
+        vibratorAlarm()
+        val notification = NotificationFile.createNotification(this, "피보호자가 지정 범위로 들어왔습니다.")
         startForeground(NOTIFICATION_ID, notification)
     }
     private fun OutOfRangeAlarm(){
@@ -222,7 +241,7 @@ class ForegroundService : Service() {
         val notification = NotificationFile.createNotification(this, "피보호자가 지정 범위를 이탈했습니다.")
         startForeground(NOTIFICATION_ID, notification)
     }
-    private fun FaildReceiveLocAlram(){
+    private fun faildReceiveLocAlram(){
         vibratorAlarm()
         val notification = NotificationFile.createNotification(this, "피보호자의 위치를 받아오지 못했습니다.")
         startForeground(NOTIFICATION_ID, notification)

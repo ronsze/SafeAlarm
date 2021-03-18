@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.location.Address
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
@@ -12,7 +13,9 @@ import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.myproject.safealarm.databinding.ActivityGuardMapBinding
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.*
+import com.naver.maps.map.overlay.GroundOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import java.io.IOException
@@ -22,10 +25,12 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var binding: ActivityGuardMapBinding
     private lateinit var mapView: MapView
     private var onMaker = false
-    val marker = Marker()
 
     var s_lat = App.prefs.s_lat.toDouble()
     var s_lng = App.prefs.s_lng.toDouble()
+
+    val lat_1km: Double = 1.0/110.9875
+    val lng_1km: Double = 1.0/88.3435
 
     companion object {
         lateinit var naverMap: NaverMap
@@ -55,12 +60,22 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setMarker(lat: Double, lng: Double){                                        //마커 생성
+        val marker = Marker()
         marker.position = LatLng(lat, lng)  //마커 위치
         marker.icon = OverlayImage.fromResource(R.drawable.ic_baseline_place_24)    //마커 아이콘
         marker.alpha = 0.8f                                                         //마커 투명도
         marker.zIndex = 10                                                          //마커 우선순위
         marker.map = naverMap
         onMaker = true
+    }
+
+    private fun setOveray(lat: Double, lng: Double){
+        val groundOverlay = GroundOverlay()
+        groundOverlay.bounds = LatLngBounds(
+                LatLng(lat-lat_1km, lng-lng_1km), LatLng(lat+lat_1km, lng+lng_1km))
+        groundOverlay.image = OverlayImage.fromResource(R.drawable.rect_map)
+        groundOverlay.alpha = 0.7f
+        groundOverlay.map = naverMap
     }
 
     private fun changePosition(latitude: Double, longitude: Double) {                               //카메라 위치 변경
@@ -70,6 +85,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         cngLocation(latitude, longitude)
         setMarker(latitude, longitude)
+        setOveray(latitude, longitude)
         naverMap.cameraPosition = cameraPosition
     }
 
