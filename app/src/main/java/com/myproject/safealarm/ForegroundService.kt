@@ -1,9 +1,13 @@
 package com.myproject.safealarm
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.*
 import android.os.IBinder
@@ -21,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.*
 
 class ForegroundService : Service() {
     private val mSocket = IO.socket(MyAddress.url)
@@ -48,6 +53,9 @@ class ForegroundService : Service() {
                 mSocket.emit("HelpCall_W")
             }
         }
+        var br = rangeBroadcastReceiver()
+        var filter = IntentFilter("range")
+        registerReceiver(br, filter)
         if (!mSocket.connected()) {
             connectSocket()
         }
@@ -123,15 +131,19 @@ class ForegroundService : Service() {
         }
     }
     private val onCallbackLoc = Emitter.Listener {              //좌표 받음
-        locationCount = 0
         if (role == "Guard") {
             var location = it[0].toString()
             try {
                 val `object` = JSONObject(location)
                 val latitude = `object`.getString("latitude").toDouble()
                 val longitude = `object`.getString("longitude").toDouble()
-                cngMapLocation(latitude, longitude)
-                checkRange(latitude, longitude)
+                if(latitude == 0.0 && longitude == 0.0){
+                    locationCount += 1
+                }else{
+                    locationCount = 0
+                    cngMapLocation(latitude, longitude)
+                    checkRange(latitude, longitude)
+                }
             } catch (e: JSONException) {
                 e.printStackTrace()
             }
@@ -176,8 +188,8 @@ class ForegroundService : Service() {
             }
             var json = JSONObject()
             try {
-                json.put("latitude", latitude + add)
-                json.put("longitude", longitude + add)
+                json.put("latitude", 37.57254 + add)
+                json.put("longitude", 127.06852 + add)
                 add += 0.0005
             } catch (e: JSONException) {
                 e.printStackTrace()
@@ -224,6 +236,23 @@ class ForegroundService : Service() {
             }
             isOutOfRange = false
         }
+    }
+
+    private fun registTimeSet(){
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, 2021)
+        calendar.set(Calendar.MONTH, 2)
+        calendar.set(Calendar.DATE, 25)
+        calendar.set(Calendar.HOUR_OF_DAY, 3)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+
+        val intent = Intent(this, rangeBroadcastReceiver::class.java).apply {
+            action = "range"
+        }
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ알람 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun disconnectAlarm(){
@@ -273,6 +302,12 @@ class ForegroundService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
+    }
+
+    class rangeBroadcastReceiver: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+        }
     }
 }
 object Actions{
