@@ -22,11 +22,11 @@ class PreferenceManager(context: Context) {
         set(value) = prefs.edit().putFloat(RANGE_KM, value).apply()
 
     var center_lat: String
-        get() = prefs.getString(CENTER_LAT, "37.58090")!!
+        get() = prefs.getString(CENTER_LAT, "37.57254")!!
         set(value) = prefs.edit().putString(CENTER_LAT, value).apply()
 
     var center_lng: String
-        get() = prefs.getString(CENTER_LNG, "127.07432")!!
+        get() = prefs.getString(CENTER_LNG, "127.06852")!!
         set(value) = prefs.edit().putString(CENTER_LNG, value).apply()
 
     var s_lat: String

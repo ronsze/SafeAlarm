@@ -8,6 +8,7 @@ import android.location.Address
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.myproject.safealarm.databinding.ActivityGuardMapBinding
 import com.naver.maps.geometry.LatLng
@@ -57,8 +58,14 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         GuardMapActivity.naverMap = naverMap
         naverMap.setMapType(NaverMap.MapType.Basic);                                    //지도 뒷 배경
         naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, true)      //건물 표시
-        changePosition(s_lat, s_lng)         //카메라 위치 변경
-        setOveray(s_lat, s_lng)
+
+        val cameraPosition = CameraPosition(
+            LatLng(s_lat, s_lng),                                                       //좌표
+            15.0                                                                 //줌 레벨
+        )
+        Companion.naverMap.cameraPosition = cameraPosition
+        changePosition(s_lat, s_lng)                                                    //마커 위치 변경, 주소 변경
+        setOveray(App.prefs.center_lat.toDouble(), App.prefs.center_lng.toDouble())
     }
 
     private fun setMarker(lat: Double, lng: Double){                                        //마커 생성
@@ -71,22 +78,17 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setOveray(lat: Double, lng: Double){
-
         groundOverlay.bounds = LatLngBounds(
-                LatLng(lat-lat_1km, lng-lng_1km), LatLng(lat+lat_1km, lng+lng_1km))
+            LatLng(lat-(lat_1km*App.prefs.range_km), lng-(lng_1km*App.prefs.range_km)),
+            LatLng(lat+(lat_1km*App.prefs.range_km), lng+(lng_1km*App.prefs.range_km)))
         groundOverlay.image = OverlayImage.fromResource(R.drawable.rect_map)
         groundOverlay.alpha = 0.7f
         groundOverlay.map = naverMap
     }
 
     private fun changePosition(latitude: Double, longitude: Double) {                               //카메라 위치 변경
-        val cameraPosition = CameraPosition(
-                LatLng(latitude, longitude),                                            //좌표
-                15.0                                                              //줌 레벨
-        )
         cngLocation(latitude, longitude)
         setMarker(latitude, longitude)
-        naverMap.cameraPosition = cameraPosition
     }
 
     private fun cngLocation(latitude: Double, longitude: Double){           //위도, 경도를 주소로 변경
@@ -95,7 +97,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var currentLocation = ""
         try{
             mResultList = mGeocoder.getFromLocation(
-                    latitude, longitude, 1
+                latitude, longitude, 1
             )
         }catch(e: IOException){
             e.printStackTrace()
@@ -105,6 +107,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             currentLocation = currentLocation.substring(5)
         }
         binding.locationTxt.setText(currentLocation)
+        Log.d("현재 위치", currentLocation)
     }
 
     inner class locReceiver: BroadcastReceiver(){                                           //브로드 캐스트 리시버

@@ -1,5 +1,6 @@
 package com.myproject.safealarm
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.myproject.safealarm.databinding.ActivityGuardSettingBinding
@@ -13,7 +14,7 @@ class GuardSettingActivity : AppCompatActivity() {
         setContentView(view)
 
         binding.rangeSet.setOnClickListener {
-
+            startActivity(Intent(this, RangeSetActivity::class.java))
         }
     }
 }

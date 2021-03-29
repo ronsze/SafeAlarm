@@ -28,7 +28,6 @@ import org.json.JSONObject
 import java.util.*
 
 class ForegroundService : Service() {
-    private val mSocket = IO.socket(MyAddress.url)
     private val role = App.prefs.role
     private lateinit var socketT: socketThread
     private var locationManager: LocationManager? = null
@@ -37,6 +36,11 @@ class ForegroundService : Service() {
     private val lat_1km: Double = 1.0/110.9875
     private val lng_1km: Double = 1.0/88.3435
     private var isOutOfRange = false
+
+    companion object{
+        val mSocket = IO.socket(MyAddress.url)
+        const val NOTIFICATION_ID = 20
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -53,9 +57,9 @@ class ForegroundService : Service() {
                 mSocket.emit("HelpCall_W")
             }
         }
-        var br = rangeBroadcastReceiver()
-        var filter = IntentFilter("range")
-        registerReceiver(br, filter)
+        if(App.prefs.role == "Guard"){
+            registTimeSet()
+        }
         if (!mSocket.connected()) {
             connectSocket()
         }
@@ -91,9 +95,9 @@ class ForegroundService : Service() {
 
     private val onTest = Emitter.Listener {
         if (role == "Guard") {
-            Log.d("이벤트", "테스트 보호자")
+
         } else {
-            Log.d("이벤트", "테스트 피보호자")
+
         }
     }
 
@@ -242,15 +246,13 @@ class ForegroundService : Service() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, 2021)
-        calendar.set(Calendar.MONTH, 2)
-        calendar.set(Calendar.DATE, 25)
-        calendar.set(Calendar.HOUR_OF_DAY, 3)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MONTH, 2)         //0부터 시작 = 월에서 -1
+        calendar.set(Calendar.DATE, 29)
+        calendar.set(Calendar.HOUR_OF_DAY, 23)  //한국 시간에서 -9시간, 맞춰서 DATE도 바꿔야됨
+        calendar.set(Calendar.MINUTE, 2)
+        calendar.set(Calendar.SECOND, 50)       //Foreground에서 사용 시 10초정도 딜레이 있음
 
-        val intent = Intent(this, rangeBroadcastReceiver::class.java).apply {
-            action = "range"
-        }
+        val intent = Intent(this, rangeBroadcastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
@@ -296,20 +298,18 @@ class ForegroundService : Service() {
         stopSelf()
     }
 
-    companion object{
-        const val NOTIFICATION_ID = 20
-    }
-
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
+}
+class rangeBroadcastReceiver: BroadcastReceiver(){
+    override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d("알람테스트", "확인")
+        Log.d("알람테스트", ForegroundService.mSocket.connect().toString())
 
-    class rangeBroadcastReceiver: BroadcastReceiver(){
-        override fun onReceive(context: Context?, intent: Intent?) {
-
-        }
     }
 }
+
 object Actions{
     private const val prefix = "com.myproject.safealarm.action"
     const val MAIN = prefix + "main"

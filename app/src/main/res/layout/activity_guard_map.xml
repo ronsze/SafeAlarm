@@ -28,8 +28,9 @@
             android:layout_height="match_parent"
             android:layout_weight="8.8"
             android:singleLine="false"
-            android:text="주소\n주소"
-            android:textSize="20dp" />
+            android:text="현재 위치"
+            android:textSize="20dp"
+            android:visibility="visible" />
     </LinearLayout>
 
     <com.naver.maps.map.MapView
