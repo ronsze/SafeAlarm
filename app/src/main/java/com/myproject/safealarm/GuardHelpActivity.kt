@@ -3,12 +3,8 @@ package com.myproject.safealarm
 import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.myproject.safealarm.databinding.ActivityGuardHelpBinding
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class GuardHelpActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGuardHelpBinding

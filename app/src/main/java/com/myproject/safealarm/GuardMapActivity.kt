@@ -65,7 +65,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         Companion.naverMap.cameraPosition = cameraPosition
         changePosition(s_lat, s_lng)                                                    //마커 위치 변경, 주소 변경
-        setOveray(App.prefs.center_lat.toDouble(), App.prefs.center_lng.toDouble())
+        //setOveray(App.prefs.center_lat.toDouble(), App.prefs.center_lng.toDouble())
     }
 
     private fun setMarker(lat: Double, lng: Double){                                        //마커 생성
@@ -87,12 +87,12 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun changePosition(latitude: Double, longitude: Double) {                               //카메라 위치 변경
-        cngLocation(latitude, longitude)
+        //cngLocation(latitude, longitude)
         setMarker(latitude, longitude)
     }
 
     private fun cngLocation(latitude: Double, longitude: Double){           //위도, 경도를 주소로 변경
-        val mGeocoder = Geocoder(applicationContext, Locale.KOREAN)
+        val mGeocoder = Geocoder(this, Locale.KOREAN)
         var mResultList: List<Address>? = null
         var currentLocation = ""
         try{

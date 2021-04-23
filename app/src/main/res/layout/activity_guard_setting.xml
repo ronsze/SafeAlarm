@@ -39,11 +39,19 @@
             android:text="범위제한 설정" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/ward_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
             android:padding="10dp"
-            android:text="ddd" />
+            android:text="피보호자 정보 등록"
+            android:textSize="30dp" />
+
+        <TextView
+            android:id="@+id/alarm_set"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="인증 알람 설정"
+            android:textSize="30dp" />
     </LinearLayout>
 </LinearLayout>

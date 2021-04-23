@@ -1,7 +1,5 @@
 package com.myproject.safealarm
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*

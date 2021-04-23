@@ -7,9 +7,9 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.*
+import android.os.Bundle
 import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -25,17 +25,22 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.Duration
 import java.util.*
 
 class ForegroundService : Service() {
     private val role = App.prefs.role
+    private val lat_1km: Double = 1.0/110.9875
+    private val lng_1km: Double = 1.0/88.3435
+    private val lat_1m: Double = lat_1km/1000.0
+    private val lng_1m: Double = lng_1km/1000.0
+
     private lateinit var socketT: socketThread
     private var locationManager: LocationManager? = null
     private var locationCount = 0
-    private var add = 0.0005
-    private val lat_1km: Double = 1.0/110.9875
-    private val lng_1km: Double = 1.0/88.3435
     private var isOutOfRange = false
+    private var lat_save: Double = 0.0
+    private var lng_save: Double = 0.0
 
     companion object{
         val mSocket = IO.socket(MyAddress.url)
@@ -57,11 +62,27 @@ class ForegroundService : Service() {
                 mSocket.emit("HelpCall_W")
             }
         }
+        if (!mSocket.connected()) {
+            connectSocket()
+        }
         if(App.prefs.role == "Guard"){
             registTimeSet()
         }
-        if (!mSocket.connected()) {
-            connectSocket()
+        if(App.prefs.role == "Ward"){
+            try{
+                locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
+                val hasFinePer = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                val hasCoarsePer = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)
+                if (hasFinePer == PackageManager.PERMISSION_GRANTED &&
+                    hasCoarsePer == PackageManager.PERMISSION_GRANTED) {
+                    locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, gpsListener)
+                    locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0.0f, networkListener)
+                }
+            }catch(e: Exception){
+                e.printStackTrace()
+            }
         }
         return START_STICKY
     }
@@ -83,7 +104,6 @@ class ForegroundService : Service() {
             mSocket.on(Socket.EVENT_DISCONNECT, onDiscconectSocket)
             mSocket.on("destDisconnect", onDestDisconnect)
             mSocket.on("requestLoc", onRequestLoc)
-            mSocket.on("test", onTest)
             mSocket.on("callbackLoc", onCallbackLoc)
             mSocket.on("outOfRange", onOutOfRange)
             mSocket.on("HelpCall_W", onHelpCall_W)
@@ -93,24 +113,13 @@ class ForegroundService : Service() {
         }
     }
 
-    private val onTest = Emitter.Listener {
-        if (role == "Guard") {
-
-        } else {
-
-        }
-    }
-
     private val onConnectSocket = Emitter.Listener {            //최초 연걸
-        Log.d("이벤트", "최초 연결")
         mSocket.emit("enterRoom", App.prefs.room)
     }
     private val onDiscconectSocket = Emitter.Listener {         //연결 해제
-        Log.d("이벤트", "연결 해제")
         connectSocket()
     }
     private val onDestDisconnect = Emitter.Listener {           //상대방 연결 끊김
-        Log.d("이벤트", "상대방 연결 끊김")
         if(role == "Guard"){
             disconnectAlarm()
         }
@@ -122,14 +131,12 @@ class ForegroundService : Service() {
     }
 
     private val onOutOfRange = Emitter.Listener {               //지정 범위 이탈
-        Log.d("이벤트", "상대방 범위 이탈")
         if(role == "Guard") {
             OutOfRangeAlarm()
         }
     }
 
     private val onHelpCall_W = Emitter.Listener {
-        Log.d("이벤트", "피보호자 도움 요청")
         if(role == "Guard"){
             receiveHelpCall()
         }
@@ -155,51 +162,104 @@ class ForegroundService : Service() {
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ위치 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun getLatLng() {                                   //피보호자 좌표 구하는 함수
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        var currentLoc_G: Location? = null
-        var currentLoc_N: Location? = null
-        var userLocation: Location
-        var latitude: Double?
-        var longitude: Double?
-        var hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-        var hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
+        var latitude = 0.0
+        var longitude = 0.0
+        var accuracy1 = 0.0f
+        var accuracy2 = 0.0f
+        var speed = 0.0f
+        var location: Location? = null
+        var provider_str: String? = null
+        var Pair: Pair<Double, Double>
+        val isGPSEnable = locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val isNetworkEnable = locationManager!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
-        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED) {
-            val locationProvider_G = LocationManager.GPS_PROVIDER
-            val locationProvider_N = LocationManager.NETWORK_PROVIDER
-            currentLoc_G = locationManager?.getLastKnownLocation(locationProvider_G)
-            currentLoc_N = locationManager?.getLastKnownLocation(locationProvider_N)
-            if (currentLoc_G == null && currentLoc_N == null) {
-                latitude = 0.0
-                longitude = 0.0
-            } else {
-                if (currentLoc_G == null) {
-                    userLocation = currentLoc_N!!
-                } else if (currentLoc_N == null) {
-                    userLocation = currentLoc_G!!
-                } else {
-                    if (currentLoc_G.accuracy > currentLoc_N.accuracy) {
-                        userLocation = currentLoc_G!!
-                    } else {
-                        userLocation = currentLoc_N!!
+        var json = JSONObject()
+
+        if(!isGPSEnable && !isNetworkEnable){
+            provider_str = provider_str.plus("error1")
+        }else{
+            val hasFinePer = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+            val hasCoarsePer = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+            if (hasFinePer == PackageManager.PERMISSION_GRANTED &&
+                hasCoarsePer == PackageManager.PERMISSION_GRANTED) {
+                val loc_g: Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                val loc_n: Location? = locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                if(locationManager != null){
+                    if(loc_g != null && loc_n != null){
+                        if(loc_g.accuracy <= loc_n.accuracy){
+                            accuracy1 = loc_g.accuracy
+                            accuracy2 = loc_n.accuracy
+                            location = loc_g
+                            provider_str = "GPS1"
+                        }else{
+                            accuracy1 = loc_g.accuracy
+                            accuracy2 = loc_n.accuracy
+                            location = loc_n
+                            provider_str = "Network1"
+                        }
+                    }else if(loc_g != null){
+                        location = loc_g
+                        provider_str = "GPS2"
+                    }else if(loc_n != null){
+                        location = loc_n
+                        provider_str = "Network2"
                     }
+                    if(location != null){
+                        accuracy1 = location?.accuracy
+                        speed = location?.speed
+                        Pair = GPS_Filter(location?.latitude, location?.longitude, speed)
+                        latitude = Pair.first
+                        longitude = Pair.second
+                        lat_save = latitude
+                        lng_save = longitude
+
+                    }else{
+                        provider_str = provider_str.plus("error2")
+                    }
+                }else{
+                    provider_str = provider_str.plus("error3")
                 }
-                latitude = userLocation.latitude
-                longitude = userLocation.longitude
+            }else{
             }
-            var json = JSONObject()
-            try {
-                json.put("latitude", 37.57254 + add)
-                json.put("longitude", 127.06852 + add)
-                add += 0.0005
-            } catch (e: JSONException) {
-                e.printStackTrace()
-            }
-            mSocket.emit("callbackLoc", json)
         }
+        try {
+            json.put("latitude", latitude)
+            json.put("longitude", longitude)
+            json.put("provider", provider_str)
+            json.put("accuracy1", accuracy1)
+            json.put("accuracy2", accuracy2)
+        } catch (e: JSONException) {
+            e.printStackTrace()
+        }
+        mSocket.emit("callbackLoc", json)
+    }
+
+    private fun GPS_Filter(first: Double, second: Double, speed: Float): Pair<Double, Double>{
+        var lat = first
+        var lng = second
+        val lat_speed = speed*lat_1m*5*1.1
+        val lng_speed = speed*lng_1m*5*1.1
+        val sub_lat = lat - lat_save
+        val sub_lng = lng - lng_save
+        if(Math.abs(sub_lat) > lat_speed){
+            if(sub_lat >= 0){
+                lat = lat_save + lat_speed
+            }else{
+                lat = lat_save - lat_speed
+            }
+            Log.e("좌표 보정", "${first} -> ${lat}")
+        }
+        if(Math.abs(sub_lng) > lng_speed){
+            if(sub_lng >= 0){
+                lng = lng_save + lng_speed
+            }else{
+                lng = lng_save - lng_speed
+            }
+            Log.e("좌표 보정", "${second} -> ${lng}")
+        }
+        return Pair(lat, lng)
     }
 
     private fun cngMapLocation(latitude: Double, longitude: Double) {       //위치 변경 브로드캐스트
@@ -214,12 +274,13 @@ class ForegroundService : Service() {
     private fun sendLocReq() {                                              //위치 요청
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                delay(10000)
+                delay(5000)
                 mSocket.emit("requestLoc")
-                if (locationCount >= 3) {
+                if (locationCount >= 5) {
                     //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
-                    Log.e("위치 요청", "응답 없음 3회")
+                    Log.e("위치 요청", "응답 없음 5회")
                     faildReceiveLocAlram()
+                    locationCount = 0
                 }
                 locationCount += 1
             }
@@ -240,21 +301,6 @@ class ForegroundService : Service() {
             }
             isOutOfRange = false
         }
-    }
-
-    private fun registTimeSet(){
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.YEAR, 2021)
-        calendar.set(Calendar.MONTH, 2)         //0부터 시작 = 월에서 -1
-        calendar.set(Calendar.DATE, 29)
-        calendar.set(Calendar.HOUR_OF_DAY, 23)  //한국 시간에서 -9시간, 맞춰서 DATE도 바꿔야됨
-        calendar.set(Calendar.MINUTE, 2)
-        calendar.set(Calendar.SECOND, 50)       //Foreground에서 사용 시 10초정도 딜레이 있음
-
-        val intent = Intent(this, rangeBroadcastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ알람 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun disconnectAlarm(){
@@ -288,6 +334,20 @@ class ForegroundService : Service() {
         vibrator.vibrate(vibrationEffect)
     }
 
+    private fun registTimeSet(){
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, 2021)
+        calendar.set(Calendar.MONTH, 2)         //0부터 시작 = 월에서 -1
+        calendar.set(Calendar.DATE, 29)
+        calendar.set(Calendar.HOUR_OF_DAY, 23)  //한국 시간에서 -9시간, 맞춰서 DATE도 바꿔야됨
+        calendar.set(Calendar.MINUTE, 2)
+        calendar.set(Calendar.SECOND, 50)       //Foreground에서 사용 시 10초정도 딜레이 있음
+
+        val intent = Intent(this, rangeBroadcastReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+    }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ서비스 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun startForegroundService(){
         val notification = NotificationFile.createNotification(this, " ")
@@ -297,16 +357,44 @@ class ForegroundService : Service() {
         stopForeground(true)
         stopSelf()
     }
-
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ위치 리스너ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    val gpsListener = object: LocationListener{
+        override fun onLocationChanged(location: Location) {
+            var latitude = location.latitude
+            var longitude = location.longitude
+            var accuracy = location.accuracy
+        }
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+        }
+        override fun onProviderEnabled(provider: String) {
+        }
+        override fun onProviderDisabled(provider: String) {
+        }
+    }
+
+    val networkListener = object: LocationListener {
+        override fun onLocationChanged(location: Location) {
+            var latitude = location.latitude
+            var longitude = location.longitude
+            var accuracy = location.accuracy
+        }
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+        }
+        override fun onProviderEnabled(provider: String) {
+        }
+        override fun onProviderDisabled(provider: String) {
+        }
+    }
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 }
+
 class rangeBroadcastReceiver: BroadcastReceiver(){
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d("알람테스트", "확인")
         Log.d("알람테스트", ForegroundService.mSocket.connect().toString())
-
     }
 }
 

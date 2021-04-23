@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <application
         android:name=".App"
@@ -19,21 +20,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <receiver android:name=".rangeBroadcastReceiver"/>
-        <activity android:name=".RangeSetActivity"></activity>
+        <activity android:name=".AlarmSetActivity"></activity>
+        <activity android:name=".WardInfoActivity" />
+
+        <receiver android:name=".rangeBroadcastReceiver" />
+
+        <activity android:name=".RangeSetActivity" />
         <activity android:name=".MissingInfoActivity" />
         <activity android:name=".WardSettingActivity" />
         <activity android:name=".WardHelpActivity" />
         <activity android:name=".GuardSettingActivity" />
         <activity android:name=".GuardHelpActivity" />
-        <activity android:name=".GuardMapActivity"
-            android:label="@string/title_activity_guard_map"
-            android:theme="@style/NoActionBar" />
+        <activity android:name=".GuardMapActivity" />
 
         <service
             android:name=".ForegroundService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            android:foregroundServiceType="location" />
 
         <activity android:name=".LoadingActivity">
             <intent-filter>
@@ -48,7 +52,7 @@
 
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="99mlf08z2p" />
+            android:value="5dmemz2dyr" />
     </application>
 
 </manifest>

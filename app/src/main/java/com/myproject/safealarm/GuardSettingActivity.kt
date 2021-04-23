@@ -16,5 +16,13 @@ class GuardSettingActivity : AppCompatActivity() {
         binding.rangeSet.setOnClickListener {
             startActivity(Intent(this, RangeSetActivity::class.java))
         }
+
+        binding.wardInfo.setOnClickListener {
+            startActivity(Intent(this, WardInfoActivity::class.java))
+        }
+
+        binding.alarmSet.setOnClickListener {
+            startActivity(Intent(this, AlarmSetActivity::class.java))
+        }
     }
 }
