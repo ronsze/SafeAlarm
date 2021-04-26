@@ -4,80 +4,122 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="10"
     tools:context=".GuardHelpActivity">
 
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#038E0909"
+        android:gravity="center"
+        android:text="실종자 정보 게시"
+        android:textSize="30sp" />
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/t"
-            android:layout_gravity="center_horizontal"
+            android:id="@+id/time_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="50sp"
-            android:padding="0dp"
-            android:text="실종 시간" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginVertical="5dp"
+            android:text="실종 시간"
+            android:textSize="25sp" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/time_text"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"></LinearLayout>
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="현재 시간으로 기록됩니다."
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/loc_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="마지막 위치"
+            android:layout_marginVertical="5dp"
+            android:textSize="25sp" />
+
+        <TextView
+            android:id="@+id/loc_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="위치"
+            android:textSize="20sp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="2"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView6"
-            android:layout_gravity="center_horizontal"
+            android:id="@+id/look_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="50sp"
-            android:text="인상 착의" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginVertical="5dp"
+            android:gravity="center"
+            android:text="인상 착의"
+            android:textSize="25sp" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName"
+            android:id="@+id/look_edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:ems="10"
-            android:inputType="textPersonName" />
+            android:maxLength = "50"
+            android:textSize="20sp"
+            android:inputType="textMultiLine" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView7"
-            android:layout_gravity="center_horizontal"
+            android:id="@+id/extra_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="50sp"
-            android:text="세부 사항" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginVertical="5dp"
+            android:gravity="center"
+            android:text="기타 사항"
+            android:textSize="25sp" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName2"
+            android:id="@+id/extra_edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ems="10"
-            android:inputType="textPersonName"/>
+            android:gravity="center_horizontal"
+            android:singleLine="false"
+            android:maxLength = "200"
+            android:inputType="textMultiLine"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <Button

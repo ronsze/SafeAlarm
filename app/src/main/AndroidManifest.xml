@@ -20,17 +20,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".AlarmSetActivity"></activity>
-        <activity android:name=".WardInfoActivity" />
-
-        <receiver android:name=".rangeBroadcastReceiver" />
-
+        <activity android:name=".AlarmAddActivity"/>
+        <activity android:name=".RangeAddActivity" />
+        <activity android:name=".AlarmSetActivity" />
+        <activity android:name=".WardInfoActivity"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".RangeSetActivity" />
         <activity android:name=".MissingInfoActivity" />
         <activity android:name=".WardSettingActivity" />
         <activity android:name=".WardHelpActivity" />
         <activity android:name=".GuardSettingActivity" />
-        <activity android:name=".GuardHelpActivity" />
+        <activity android:name=".GuardHelpActivity"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".GuardMapActivity" />
 
         <service

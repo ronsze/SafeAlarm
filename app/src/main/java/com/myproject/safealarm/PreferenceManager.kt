@@ -12,22 +12,12 @@ class PreferenceManager(context: Context) {
     val ROOM_NUM = "room"
     val SAVE_LAT = "s_lat"
     val SAVE_LNG = "s_lng"
-    val CENTER_LAT = "center_lat"
-    val CENTER_LNG = "center_lng"
     val RANGE_KM = "range_km"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
 
     var range_km: Float
         get() = prefs.getFloat(RANGE_KM, 1.0f)
         set(value) = prefs.edit().putFloat(RANGE_KM, value).apply()
-
-    var center_lat: String
-        get() = prefs.getString(CENTER_LAT, "37.57254")!!
-        set(value) = prefs.edit().putString(CENTER_LAT, value).apply()
-
-    var center_lng: String
-        get() = prefs.getString(CENTER_LNG, "127.06852")!!
-        set(value) = prefs.edit().putString(CENTER_LNG, value).apply()
 
     var s_lat: String
         get() = prefs.getString(SAVE_LAT, "37.58090")!!

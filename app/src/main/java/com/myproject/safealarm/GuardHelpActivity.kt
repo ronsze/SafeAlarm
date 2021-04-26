@@ -8,7 +8,6 @@ import com.myproject.safealarm.databinding.ActivityGuardHelpBinding
 
 class GuardHelpActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGuardHelpBinding
-    private val context = this
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityGuardHelpBinding.inflate(layoutInflater)
@@ -29,8 +28,9 @@ class GuardHelpActivity : AppCompatActivity() {
 
         builder.setTitle("실종자 정보 등록")
         builder.setMessage("기존에 저장해 둔 실종자 정보와\n" +
-                "위에 명시된 정보가 앱에 등록됩니다.\n" +
-                "다른 사용자들이 이를 확인할 수 있습니다.")
+                "위에 명시된 정보가 앱에 게시됩니다.\n" +
+                "다른 사용자가 이를 확인할 수 있습니다.\n" +
+                "동의하시면 확인을 눌러주세요.")
         var dialog_listener = object: DialogInterface.OnClickListener{
             override fun onClick(dialog: DialogInterface?, which: Int){
                 when(which){

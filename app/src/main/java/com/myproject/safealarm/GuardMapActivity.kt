@@ -12,9 +12,7 @@ import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.myproject.safealarm.databinding.ActivityGuardMapBinding
 import com.naver.maps.geometry.LatLng
-import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.*
-import com.naver.maps.map.overlay.GroundOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import java.io.IOException
@@ -23,16 +21,10 @@ import java.util.*
 class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var binding: ActivityGuardMapBinding
     private lateinit var mapView: MapView
-    private var onMaker = false
 
-    var s_lat = App.prefs.s_lat.toDouble()
-    var s_lng = App.prefs.s_lng.toDouble()
-
-    val lat_1km: Double = 1.0/110.9875
-    val lng_1km: Double = 1.0/88.3435
-
-    val marker = Marker()
-    val groundOverlay = GroundOverlay()
+    private var s_lat = App.prefs.s_lat.toDouble()
+    private var s_lng = App.prefs.s_lng.toDouble()
+    private val marker = Marker()
 
     companion object {
         lateinit var naverMap: NaverMap
@@ -65,7 +57,6 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         Companion.naverMap.cameraPosition = cameraPosition
         changePosition(s_lat, s_lng)                                                    //마커 위치 변경, 주소 변경
-        //setOveray(App.prefs.center_lat.toDouble(), App.prefs.center_lng.toDouble())
     }
 
     private fun setMarker(lat: Double, lng: Double){                                        //마커 생성
@@ -74,21 +65,16 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         marker.alpha = 0.8f                                                         //마커 투명도
         marker.zIndex = 10                                                          //마커 우선순위
         marker.map = naverMap
-        onMaker = true
     }
 
-    private fun setOveray(lat: Double, lng: Double){
-        groundOverlay.bounds = LatLngBounds(
-            LatLng(lat-(lat_1km*App.prefs.range_km), lng-(lng_1km*App.prefs.range_km)),
-            LatLng(lat+(lat_1km*App.prefs.range_km), lng+(lng_1km*App.prefs.range_km)))
-        groundOverlay.image = OverlayImage.fromResource(R.drawable.rect_map)
-        groundOverlay.alpha = 0.7f
-        groundOverlay.map = naverMap
-    }
-
-    private fun changePosition(latitude: Double, longitude: Double) {                               //카메라 위치 변경
+    private fun changePosition(latitude: Double, longitude: Double) {                               //마커, 주소 최신화
         //cngLocation(latitude, longitude)
         setMarker(latitude, longitude)
+        val cameraPosition = CameraPosition(
+            LatLng(latitude, longitude),
+            Companion.naverMap.cameraPosition.zoom
+        )
+        Companion.naverMap.cameraPosition = cameraPosition
     }
 
     private fun cngLocation(latitude: Double, longitude: Double){           //위도, 경도를 주소로 변경
