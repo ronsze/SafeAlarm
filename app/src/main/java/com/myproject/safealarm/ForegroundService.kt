@@ -28,6 +28,9 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.time.Duration
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class ForegroundService : Service() {
     private val role = App.prefs.role
@@ -41,6 +44,10 @@ class ForegroundService : Service() {
     private var locationCount = 0
     private var lat_save: Double = 0.0
     private var lng_save: Double = 0.0
+    private var isRight = true
+    private var isUp = true
+    private var prev_fix = false
+    private var log_str = ""
 
     companion object {
         val mSocket = IO.socket(MyAddress.url)
@@ -169,6 +176,15 @@ class ForegroundService : Service() {
                 val `object` = JSONObject(location)
                 val latitude = `object`.getString("latitude").toDouble()
                 val longitude = `object`.getString("longitude").toDouble()
+                val fix_msg = `object`.getString("fixed")
+                if(fix_msg != "보정없음"){
+                    prev_fix = true
+                }
+                if(prev_fix){
+                    if(fix_msg == "보정없음"){
+                        log_str = log_str + fix_msg + "\n"
+                    }
+                }
                 if (latitude == 0.0 && longitude == 0.0) {
                     locationCount += 1
                 } else {
@@ -232,6 +248,8 @@ class ForegroundService : Service() {
                             fix = triple.third
                             lat_save = latitude
                             lng_save = longitude
+                            isUp = latitude >= lat_save
+                            isRight = longitude >= lng_save
                         }
                         json.put("speed", location.speed)
                     } else {
@@ -254,34 +272,72 @@ class ForegroundService : Service() {
         mSocket.emit("callbackLoc", json)
     }
 
-    private fun GPS_Filter(first: Double, second: Double, speed: Float): Triple<Double, Double, String> {
-        var lat = first
-        var lng = second
-        var fix = "보정없음"
+    private fun GPS_Filter(first: Double, second: Double, third: Float): Triple<Double, Double, String> {
+        var lat: Double = first
+        var lng: Double = second
+        var lat_F: Double = first
+        var lat_S: Double = first
+        var lat_T: Double = first
+        var lng_F: Double = second
+        var lng_S: Double = second
+        var lng_T: Double = second
+        val speed: Double = third * 1.3
+        var fix: String = "보정없음"
         var isFix = false
-        val lat_speed = speed * lat_1m * 5 * 1.1
-        val lng_speed = speed * lng_1m * 5 * 1.1
+
         val sub_lat = lat - lat_save
         val sub_lng = lng - lng_save
+        val distance = sqrt(sub_lat.pow(2) + sub_lng.pow(2))
+        val sum = abs(sub_lat) + abs(sub_lng)
+        val ratio_lat = sub_lat/sum
+        val ratio_lng = sub_lng/sum
+        val ratio_1m = (ratio_lat * lat_1m) + (ratio_lng * lng_1m)
+        val ratio_dis = (speed*ratio_1m)/distance
 
-        if (Math.abs(sub_lat) > lat_speed) {
-            if (sub_lat >= 0) {
-                lat = lat_save + lat_speed
-            } else {
-                lat = lat_save - lat_speed
+        if(distance >= speed * ratio_1m){
+            if(sub_lat >= 0){
+                lat_F = lat_save + sub_lat * ratio_dis
+            }else{
+                lat_F = lat_save - sub_lat * ratio_dis
+            }
+            if(sub_lng >= 0){
+                lng_F = lng_save + sub_lng * ratio_dis
+            }else{
+                lng_F = lng_save - sub_lng * ratio_dis
+            }
+
+            if(isUp){
+                lat_S = lat_save + sub_lat * ratio_dis
+            }else{
+                lat_S = lat_save - sub_lat * ratio_dis
+            }
+            if(isRight){
+                lng_S = lng_save + sub_lng * ratio_dis
+            }else{
+                lng_S = lng_save - sub_lng * ratio_dis
             }
             isFix = true
         }
-        if (Math.abs(sub_lng) > lng_speed) {
-            if (sub_lng >= 0) {
-                lng = lng_save + lng_speed
-            } else {
-                lng = lng_save - lng_speed
-            }
-            isFix = true
-        }
+
         if(isFix){
-            fix = "lat : ${first} -> ${lat}, lng : ${second} -> ${lng}, speed : ${speed}m/s"
+            if(lat_F > lat_S){
+                lat_T = lat_S + ((lat_F - lat_S) / 2.0)
+            }else if(lat_F < lat_S){
+                lat_T = lat_F + ((lat_S - lat_F) / 2.0)
+            }else{
+                lat_T = lat_F
+            }
+            if(lng_F > lng_S){
+                lng_T = lng_S + ((lng_F - lng_S) / 2.0)
+            }else if(lng_F < lng_S){
+                lng_T = lng_F + ((lng_S - lng_F) / 2.0)
+            }else{
+                lng_T = lng_F
+            }
+        }
+
+        if(isFix){
+            fix = "보정 : Fisrt = ${lat_F}, ${lng_F}/Second = ${lat_S}, ${lng_S}/Third = ${lat_T}, ${lng_T}"
         }
         return Triple(lat, lng, fix)
     }
@@ -405,6 +461,11 @@ class ForegroundService : Service() {
         override fun onReceive(context: Context?, intent: Intent?) {
             TODO("Not yet implemented")
         }
+    }
+
+    override fun onDestroy() {
+        Log.e("보정", log_str)
+        super.onDestroy()
     }
 }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
