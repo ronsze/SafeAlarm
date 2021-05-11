@@ -8,11 +8,13 @@ import android.location.Address
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.myproject.safealarm.databinding.ActivityGuardMapBinding
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
+import com.naver.maps.map.overlay.ArrowheadPathOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import java.io.IOException
@@ -25,6 +27,110 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var s_lat = App.prefs.s_lat.toDouble()
     private var s_lng = App.prefs.s_lng.toDouble()
     private val marker = Marker()
+    private val center_latLng: List<List<Double>> = listOf(
+        listOf(37.58775750490326, 127.05259121997861),
+        listOf(37.58775750490326, 127.05598705555225),
+        listOf(37.58775750490326, 127.05938289112589),
+        listOf(37.58775750490326, 127.06277872669953),
+        listOf(37.58775750490326, 127.06617456227318),
+        listOf(37.58775750490326, 127.06957039784682),
+        listOf(37.58775750490326, 127.07296623342046),
+        listOf(37.58775750490326, 127.0763620689941),
+        listOf(37.58775750490326, 127.07975790456774),
+        listOf(37.58775750490326, 127.08315374014138),
+        listOf(37.58505449780787, 127.05259121997861),
+        listOf(37.58505449780787, 127.05598705555225),
+        listOf(37.58505449780787, 127.05938289112589),
+        listOf(37.58505449780787, 127.06277872669953),
+        listOf(37.58505449780787, 127.06617456227318),
+        listOf(37.58505449780787, 127.06957039784682),
+        listOf(37.58505449780787, 127.07296623342046),
+        listOf(37.58505449780787, 127.0763620689941),
+        listOf(37.58505449780787, 127.07975790456774),
+        listOf(37.58505449780787, 127.08315374014138),
+        listOf(37.58235149071248, 127.05259121997861),
+        listOf(37.58235149071248, 127.05598705555225),
+        listOf(37.58235149071248, 127.05938289112589),
+        listOf(37.58235149071248, 127.06277872669953),
+        listOf(37.58235149071248, 127.06617456227318),
+        listOf(37.58235149071248, 127.06957039784682),
+        listOf(37.58235149071248, 127.07296623342046),
+        listOf(37.58235149071248, 127.0763620689941),
+        listOf(37.58235149071248, 127.07975790456774),
+        listOf(37.58235149071248, 127.08315374014138),
+        listOf(37.57964848361709, 127.05259121997861),
+        listOf(37.57964848361709, 127.05598705555225),
+        listOf(37.57964848361709, 127.05938289112589),
+        listOf(37.57964848361709, 127.06277872669953),
+        listOf(37.57964848361709, 127.06617456227318),
+        listOf(37.57964848361709, 127.06957039784682),
+        listOf(37.57964848361709, 127.07296623342046),
+        listOf(37.57964848361709, 127.0763620689941),
+        listOf(37.57964848361709, 127.07975790456774),
+        listOf(37.57964848361709, 127.08315374014138),
+        listOf(37.576945476521696, 127.05259121997861),
+        listOf(37.576945476521696, 127.05598705555225),
+        listOf(37.576945476521696, 127.05938289112589),
+        listOf(37.576945476521696, 127.06277872669953),
+        listOf(37.576945476521696, 127.06617456227318),
+        listOf(37.576945476521696, 127.06957039784682),
+        listOf(37.576945476521696, 127.07296623342046),
+        listOf(37.576945476521696, 127.0763620689941),
+        listOf(37.576945476521696, 127.07975790456774),
+        listOf(37.576945476521696, 127.08315374014138),
+        listOf(37.574242469426305, 127.05259121997861),
+        listOf(37.574242469426305, 127.05598705555225),
+        listOf(37.574242469426305, 127.05938289112589),
+        listOf(37.574242469426305, 127.06277872669953),
+        listOf(37.574242469426305, 127.06617456227318),
+        listOf(37.574242469426305, 127.06957039784682),
+        listOf(37.574242469426305, 127.07296623342046),
+        listOf(37.574242469426305, 127.0763620689941),
+        listOf(37.574242469426305, 127.07975790456774),
+        listOf(37.574242469426305, 127.08315374014138),
+        listOf(37.57153946233091, 127.05259121997861),
+        listOf(37.57153946233091, 127.05598705555225),
+        listOf(37.57153946233091, 127.05938289112589),
+        listOf(37.57153946233091, 127.06277872669953),
+        listOf(37.57153946233091, 127.06617456227318),
+        listOf(37.57153946233091, 127.06957039784682),
+        listOf(37.57153946233091, 127.07296623342046),
+        listOf(37.57153946233091, 127.0763620689941),
+        listOf(37.57153946233091, 127.07975790456774),
+        listOf(37.57153946233091, 127.08315374014138),
+        listOf(37.56883645523552, 127.05259121997861),
+        listOf(37.56883645523552, 127.05598705555225),
+        listOf(37.56883645523552, 127.05938289112589),
+        listOf(37.56883645523552, 127.06277872669953),
+        listOf(37.56883645523552, 127.06617456227318),
+        listOf(37.56883645523552, 127.06957039784682),
+        listOf(37.56883645523552, 127.07296623342046),
+        listOf(37.56883645523552, 127.0763620689941),
+        listOf(37.56883645523552, 127.07975790456774),
+        listOf(37.56883645523552, 127.08315374014138),
+        listOf(37.56613344814013, 127.05259121997861),
+        listOf(37.56613344814013, 127.05598705555225),
+        listOf(37.56613344814013, 127.05938289112589),
+        listOf(37.56613344814013, 127.06277872669953),
+        listOf(37.56613344814013, 127.06617456227318),
+        listOf(37.56613344814013, 127.06957039784682),
+        listOf(37.56613344814013, 127.07296623342046),
+        listOf(37.56613344814013, 127.0763620689941),
+        listOf(37.56613344814013, 127.07975790456774),
+        listOf(37.56613344814013, 127.08315374014138),
+        listOf(37.56343044104474, 127.05259121997861),
+        listOf(37.56343044104474, 127.05598705555225),
+        listOf(37.56343044104474, 127.05938289112589),
+        listOf(37.56343044104474, 127.06277872669953),
+        listOf(37.56343044104474, 127.06617456227318),
+        listOf(37.56343044104474, 127.06957039784682),
+        listOf(37.56343044104474, 127.07296623342046),
+        listOf(37.56343044104474, 127.0763620689941),
+        listOf(37.56343044104474, 127.07975790456774),
+        listOf(37.56343044104474, 127.08315374014138)
+    )
+    private var next_cell = 0 ; private var isPred = false
+    val arrowheadPath = ArrowheadPathOverlay()
 
     companion object {
         lateinit var naverMap: NaverMap
@@ -44,6 +150,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.getMapAsync(this)
 
         LocalBroadcastManager.getInstance(this).registerReceiver(locReceiver(), IntentFilter(App.CNG_LOC))
+        LocalBroadcastManager.getInstance(this).registerReceiver(drawReceiver(), IntentFilter("prediction"))
     }
 
     override fun onMapReady(naverMap: NaverMap) {                                           //지도 최초 생성
@@ -72,9 +179,23 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         setMarker(latitude, longitude)
         val cameraPosition = CameraPosition(
             LatLng(latitude, longitude),
-            Companion.naverMap.cameraPosition.zoom
+            naverMap.cameraPosition.zoom
         )
-        Companion.naverMap.cameraPosition = cameraPosition
+        naverMap.cameraPosition = cameraPosition
+        if(isPred){
+            drawPath(Pair(latitude, longitude), next_cell)
+        }
+    }
+
+    private fun drawPath(latLng: Pair<Double, Double>, next_cell: Int){
+        var next_latLng = center_latLng[next_cell-1]
+        arrowheadPath.coords = listOf(
+            LatLng(latLng.first, latLng.second),
+            LatLng(next_latLng[0], next_latLng[1])
+        )
+        arrowheadPath.map = naverMap
+        Log.e("셀 번호", "다음 셀 : ${next_cell}")
+        Log.e("셀 좌표", "다음 셀 : ${next_latLng}")
     }
 
     private fun cngLocation(latitude: Double, longitude: Double){           //위도, 경도를 주소로 변경
@@ -105,6 +226,20 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
+    inner class drawReceiver: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val now = intent?.getIntExtra("now_cell", 0)
+            val next = intent?.getIntExtra("next_cell", 0)
+            if(now != null && next != null){
+                isPred = true
+                next_cell = next
+            }else if(now == -1 && next == -1){
+
+            }
+        }
+    }
+
     override fun onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(locReceiver())
         super.onDestroy()

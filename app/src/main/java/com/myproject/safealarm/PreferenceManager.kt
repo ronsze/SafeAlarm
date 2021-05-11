@@ -13,6 +13,7 @@ class PreferenceManager(context: Context) {
     val SAVE_LAT = "s_lat"
     val SAVE_LNG = "s_lng"
     val RANGE_KM = "range_km"
+    val P_KEY = "key"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
 
     var range_km: Float
@@ -46,4 +47,8 @@ class PreferenceManager(context: Context) {
     var room: String
         get() = prefs.getString(ROOM_NUM, "")!!
         set(value) = prefs.edit().putString(ROOM_NUM, value).apply()
+
+    var key: String
+        get() = prefs.getString(P_KEY, "")!!
+        set(value) = prefs.edit().putString(P_KEY, value).apply()
 }

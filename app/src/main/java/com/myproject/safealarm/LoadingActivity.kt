@@ -15,7 +15,7 @@ import retrofit2.Response
 
 class LoadingActivity : AppCompatActivity() {
     val context = this
-    var REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +57,7 @@ class LoadingActivity : AppCompatActivity() {
         }else{
             startActivity(Intent(this, WardActivity::class.java))
         }
+        App.connectSocket()
         finish()
     }
 

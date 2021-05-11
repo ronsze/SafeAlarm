@@ -8,14 +8,29 @@ import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.google.zxing.integration.android.IntentIntegrator
+import com.google.zxing.integration.android.IntentResult
 import com.myproject.safealarm.databinding.ActivityRegistBinding
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 
 class RegistActivity : AppCompatActivity() {
     private val context = this
     private lateinit var binding: ActivityRegistBinding
+    private var keyStr: String = ""
+    private lateinit var socketT: socketThread
+    private lateinit var room: String
+
+    companion object {
+        val mSocket_R = App.mSocket
+        const val NOTIFICATION_ID = 20
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,68 +39,83 @@ class RegistActivity : AppCompatActivity() {
         setContentView(view)
 
         binding.GuardBtn.setOnClickListener {
-            showGuardDialog()
+            var qrIntent = Intent(this, QRCodeActivity::class.java)
+            qrIntent.putExtra("key", createKeyStr())
+            startActivity(qrIntent)
         }
         binding.WardBtn.setOnClickListener {
-            showWardDialog()
+            scanQRCode()
         }
     }
 
-    fun showGuardDialog(){                      //보호자 다이어로그
-        val builder = AlertDialog.Builder(this)
+    private fun connectSocket() {
+        socketT = socketThread()
+        socketT.run()
+    }
 
-        builder.setTitle("피보호자 화면에 입력해주세요.\n입력 후 확인을 눌러주세요.")
-        builder.setMessage("ID : ${App.prefs.id}")
-        var dialog_listener = object: DialogInterface.OnClickListener{
-            override fun onClick(dialog: DialogInterface?, which: Int){
-                when(which){
-                    DialogInterface.BUTTON_NEGATIVE -> {
-                        registGuard()
-                    }
+    inner class socketThread : Thread() {
+        override fun run() {
+            try {
+                mSocket_R.connect()
+                mSocket_R.on("ok_W", onOK)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun createKeyStr(): String{
+        var str = "Guard."
+        val keygen = KeyGenerator.getInstance("AES")
+        keygen.init(256)
+        val key: SecretKey = keygen.generateKey()
+        str += App.prefs.id + "."
+        for(i in 0 .. key.encoded.size-1){
+            keyStr += key.encoded[i].toString() + ","
+        }
+        App.prefs.key = keyStr
+        str += keyStr
+        return str
+    }
+
+    fun scanQRCode(){
+        val integrator = IntentIntegrator(this)
+        integrator.setBeepEnabled(false)
+        integrator.setOrientationLocked(true)
+        integrator.setPrompt("QR코드를 찍어주세요.")
+        integrator.initiateScan()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val result: IntentResult =
+            IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+        if(result != null) {
+            if (result.contents == null) {
+                Log.e("this", "잘못된 QR코드입니다.")
+                finish()
+            } else {
+                val QRArr = result.contents.split(".")
+                if (QRArr[0] != "Guard") {
+                    Log.e("this", "잘못된 QR코드입니다.")
+                    finish()
+                } else {
+                    connectSocket()
+                    mSocket_R.emit("enterRoom", App.prefs.id)
+                    Log.e("this", result.contents)
+                    var code = QRArr[1]
+                    keyStr = QRArr[2]
+                    App.prefs.key = keyStr
+                    registWard(code)
                 }
             }
         }
-        builder.setNegativeButton("확인", dialog_listener)
-        builder.setPositiveButton("취소", null)
-        builder.show()
-    }
-
-    fun showWardDialog(){                       //피보호자 다이어로그
-        val builder = AlertDialog.Builder(this)
-        val et = EditText(this)
-        builder.setMessage("보호자 화면의 코드를 입력해주세요.")
-        builder.setView(et)
-        var dialog_listener = object: DialogInterface.OnClickListener{
-            override fun onClick(dialog: DialogInterface?, which: Int){
-                when(which){
-                    DialogInterface.BUTTON_NEGATIVE -> {
-                        registWard(et.text.toString())
-                    }
-                }
-            }
+        else{
+            super.onActivityResult(requestCode, resultCode, data)
         }
-        builder.setNegativeButton("확인", dialog_listener)
-        builder.setPositiveButton("취소", null)
-        builder.show()
-    }
-
-    fun registGuard(){                          //보호자 등록
-        Singleton.server.registGuard(App.prefs.id).enqueue(object:Callback<ResponseDC>{
-            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-                Log.d("보호자 등록", "실패")
-            }
-            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                Log.d("보호자 등록", "성공")
-                Toast.makeText(context, "등록되었습니다.", Toast.LENGTH_SHORT).show()
-                App.prefs.regKey = true
-                App.prefs.role = "Guard"
-                App.prefs.room = App.prefs.id
-                startForeService()
-            }
-        })
     }
 
     fun registWard(code: String){                  //피보호자 등록
+        Log.e("code", code)
         Singleton.server.registWard(App.prefs.id, code).enqueue(object:Callback<ResponseDC>{
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.d("피보호자 등록", "실패")
@@ -93,17 +123,14 @@ class RegistActivity : AppCompatActivity() {
             }
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
                 Log.d("피보호자 등록", "성공")
-                Toast.makeText(context, "등록되었습니다.", Toast.LENGTH_SHORT).show()
-                App.prefs.regKey = true
-                App.prefs.role = "Ward"
-                App.prefs.room = code
-                startForeService()
+                mSocket_R.emit("regist_W", code + "." + App.prefs.id)
+                room = code
             }
         })
     }
 
     fun startForeService(){                 //Foregroud서비스 시작
-        val foreIntent = Intent(this@RegistActivity, ForegroundService::class.java)
+        val foreIntent = Intent(this, ForegroundService::class.java)
         foreIntent.action = Actions.START_FOREGROUND
         startService(foreIntent)
         moveActivity()
@@ -112,5 +139,23 @@ class RegistActivity : AppCompatActivity() {
     fun moveActivity(){                     //액티비티 이동
         startActivity(Intent(this, LoadingActivity::class.java))
         finish()
+    }
+
+    private val onOK = Emitter.Listener {
+        try {
+            Log.e("onOK", "받음")
+            val id = it[0].toString()
+            if (id == App.prefs.id) {
+                App.prefs.regKey = true
+                App.prefs.role = "Ward"
+                App.prefs.room = room
+                mSocket_R.emit("finish", room)
+                startForeService()
+            } else {
+                Log.e("onOK", "에러")
+            }
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
     }
 }
