@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import java.util.Random
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -15,11 +16,15 @@ import retrofit2.Response
 
 class LoadingActivity : AppCompatActivity() {
     val context = this
-    val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
+                                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
+        App.connectSocket()
+        Log.e("씨발123123", App.mSocket.connected().toString())
+
         checkPermission()
     }
 
@@ -57,7 +62,6 @@ class LoadingActivity : AppCompatActivity() {
         }else{
             startActivity(Intent(this, WardActivity::class.java))
         }
-        App.connectSocket()
         finish()
     }
 
@@ -66,9 +70,15 @@ class LoadingActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_FINE_LOCATION)
         val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION)
+        val hasStorageReadPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+        val hasStorageWritePermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED){
+                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED &&
+                hasStorageReadPermission == PackageManager.PERMISSION_GRANTED &&
+                hasStorageWritePermission == PackageManager.PERMISSION_GRANTED){
             readPref()
         }else{
             if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])){
@@ -93,7 +103,9 @@ class LoadingActivity : AppCompatActivity() {
                 readPref()
             }else{
                 if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
-                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])){
+                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])
+                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[2])
+                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[3])){
                     Toast.makeText(this, "권한 설정이 거부되었습니다.\n앱을 사용하시려면 다시 실행해주세요.", Toast.LENGTH_SHORT).show()
                     finish()
                 }else{

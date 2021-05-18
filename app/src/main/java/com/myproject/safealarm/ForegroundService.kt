@@ -32,6 +32,7 @@ import java.security.SecureRandom
 import java.time.Duration
 import java.util.*
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.*
@@ -41,7 +42,7 @@ class ForegroundService : Service() {
     private lateinit var socketT: socketThread
     private var locationManager: LocationManager? = null
 
-    private val lat_1km: Double = 1.0 / 110.9875 ; private val lng_1km: Double = 1.0 / 88.3435
+    private val lat1km: Double = 1.0 / 110.9875 ; private val lng1km: Double = 1.0 / 88.3435
     private var lat_save: Double = 0.0 ; private var lng_save: Double = 0.0
     private var locationCount = 0
     private var prev_lat = 0.0 ; private var prev_lng = 0.0 ; private var prev_dis = 0.0
@@ -49,7 +50,9 @@ class ForegroundService : Service() {
     private var isFix_S = false
     private var now_cell = 0
     private lateinit var key: ByteArray
-    private var ivStr = "1W89g5sGzx21qhHJ"
+    private var isSendCert = false
+    private var isCert = false
+    private var first = false
 
     private var entireData: MutableList<MutableList<Int>> = mutableListOf(
         mutableListOf(56, 57, 58, 59, 60, 70, 79, 78, 77, 65, 55, 45, 35, 25, 15, 5),
@@ -106,6 +109,8 @@ class ForegroundService : Service() {
                 e.printStackTrace()
             }
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver(alarmManagerReceiver(), IntentFilter("Alarm"))
+        LocalBroadcastManager.getInstance(this).registerReceiver(timerReceiver(), IntentFilter("timer"))
         return START_STICKY
     }
 
@@ -133,11 +138,8 @@ class ForegroundService : Service() {
             mSocket.on("requestLoc", onRequestLoc)
             mSocket.on("callbackLoc", onCallbackLoc)
             mSocket.on("HelpCall_W", onHelpCall_W)
-            mSocket.on("inOfRange", onInOfRange)
-            mSocket.on("outOfRange", onOutOfRange)
-            mSocket.on("setGeofence", onSetGeofence)
-            mSocket.on("delGeofence", onDelGeofence)
-            mSocket.on("sendCerti", onSendCerti)
+            mSocket.on("sendCert", onSendCert)
+            mSocket.on("callbackCert", onCallbackCert)
             if (role == "Guard") {
                 sendLocReq()
             }
@@ -147,48 +149,48 @@ class ForegroundService : Service() {
     private val onConnectSocket = Emitter.Listener {            //최초 연걸
         mSocket.emit("enterRoom", App.prefs.room)
     }
+
     private val onDiscconectSocket = Emitter.Listener {         //연결 해제
         connectSocket()
     }
+
     private val onDestDisconnect = Emitter.Listener {           //상대방 연결 끊김
-        if (role == "Guard") {
-            disconnectAlarm()
-        }
+        createNotification("상대방과 연결이 끊어졌습니다.")
     }
+
     private val onRequestLoc = Emitter.Listener {               //좌표 요청 받음
         if (role == "Ward") {
-            getLatLng()
+            try{
+                getLatLng()
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
+
         }
     }
 
     private val onHelpCall_W = Emitter.Listener {
         if (role == "Guard") {
-            receiveHelpCall()
+            createNotification("피보호자로부터 도움 요청을 받았습니다.")
         }
     }
 
-    private val onOutOfRange = Emitter.Listener {               //지정 구역 이탈
+    private val onSendCert = Emitter.Listener {                //인증 메세지 받음(피보호자)
+        if(role == "Ward"){
+            createNotification("보호자로부터 인증 요청이 도착했습니다.\n3분 안에 인증을 완료해주세요.")
+            App.prefs.cert = true
+            var timer = TimerThread_W()
+            timer.run()
+        }
+    }
+
+    private val onCallbackCert = Emitter.Listener {            //인증 메세지 완료
         if(role == "Guard"){
-            outOfRangeAlarm()
+            if(isSendCert){
+                createNotification("피보호자가 인증을 완료했습니다.")
+                isCert = true
+            }
         }
-    }
-
-    private val onInOfRange = Emitter.Listener {               //지정 구역 들어옴
-        if(role == "Guard"){
-            inOfRangeAlarm()
-        }
-    }
-
-    private val onSetGeofence = Emitter.Listener {              //Geofence설정
-        setGeofence()
-    }
-
-    private val onDelGeofence = Emitter.Listener {              //Geofence삭제
-        delGeofence()
-    }
-
-    private val onSendCerti = Emitter.Listener {                //인증 메세지 전송
-
     }
 
     private val onCallbackLoc = Emitter.Listener {              //좌표 받음
@@ -203,30 +205,11 @@ class ForegroundService : Service() {
                 } else {
                     locationCount = 0
                     cngMapLocation(latitude, longitude)
+                    first = true
                     var cell = getCell(latitude, longitude)
-                    checkCell(cell)
-                    /*
-                    if(fix_msg != "보정없음"){
-                        prev_fix = true
-                        fix_lat += latitude
-                        fix_lng += longitude
-                        fix_cnt += 1
-                    }else{
-                        if(prev_fix){
-                            Location.distanceBetween(fix_lat/fix_cnt, fix_lng/fix_cnt, latitude, longitude, arr)
-                            val distance = abs(arr[0])
-                            sum += distance.toDouble()
-                            cnt += 1
-                            avg = (sum/cnt)
-                            fix_lat = 0.0
-                            fix_lng = 0.0
-                            fix_cnt = 0
-                            prev_fix = false
-                            Log.e("보정편차", "third : ${distance}m")
-                            Log.e("편차평균", "총 거리 : ${(sum*100).toInt()/100.0}, 횟수 : ${cnt}, 평균 : ${(avg*100).toInt()/100.0}")
-                        }
+                    if(first){
+                        checkCell(cell)
                     }
-                    */
                 }
             } catch (e: JSONException) {
                 locationCount += 1
@@ -275,11 +258,9 @@ class ForegroundService : Service() {
                             lng = triple.second
                             fix = triple.third
 
-                            if(lat - lat_save == 0.0 && lng - lng_save == 0.0){
-
-                            }else if(isFix_S) {
+                            if(lat - lat_save == 0.0 && lng - lng_save == 0.0){ }
+                            else if(isFix_S) {
                                 prev_dis = 0.0
-
                             }
                             else {
                                 prev_lat = lat - lat_save ; prev_lng = lng - lng_save
@@ -296,15 +277,14 @@ class ForegroundService : Service() {
                 } else {
                     provider_str = provider_str.plus("error3")
                 }
-            } else {
-            }
+            } else { }
         }
         try {
-            json.put("latitude", encrypt(lat.toString(), key, ivStr))
-            json.put("longitude", encrypt(lng.toString(), key, ivStr))
+            json.put("latitude", encrypt(lat.toString(), key))
+            json.put("longitude", encrypt(lng.toString(), key))
             json.put("provider", provider_str)
             json.put("fixed", fix)
-        } catch (e: JSONException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         mSocket.emit("callbackLoc", json)
@@ -371,7 +351,7 @@ class ForegroundService : Service() {
                 if (locationCount >= 5) {
                     //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
                     Log.e("위치 요청", "응답 없음 5회")
-                    faildReceiveLocAlram()
+                    createNotification("피보호자의 위치를 받아오지 못했습니다.")
                     locationCount = 0
                 }else{
                     mSocket.emit("requestLoc")
@@ -387,13 +367,16 @@ class ForegroundService : Service() {
             val next_cell = predictionPath(cell)
             Log.e("씨발", "now : ${now_cell}, next : ${next_cell}")
             if(next_cell == 0){
-                cantPrediction()
+                createNotification("피보호자가 예측 경로를 벗어났습니다.")
                 drawPath(-1, -1)
+                App.prefs.isPred = false
             }else if(next_cell == -1) {
                 drawPath(-1, -1)
                 Log.e("예측", "예측종료")
+                App.prefs.isPred = false
             }
             else{
+                App.prefs.isPred = true
                 drawPath(now_cell, next_cell)
             }
         }
@@ -470,54 +453,14 @@ class ForegroundService : Service() {
     }
 
     private fun drawPath(now_cell: Int, next_cell: Int){
-        var intent = Intent("prediction")
-        intent.putExtra("now_cell", now_cell)
-        intent.putExtra("next_cell", next_cell)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
-    private fun setGeofence(){                      //Geofence설정
-
-    }
-
-    private fun delGeofence(){                      //Geofence삭제
-
+        App.prefs.now = now_cell
+        App.prefs.next = next_cell
     }
 
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ알람 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-    private fun disconnectAlarm() {
+    private fun createNotification(msg: String){
         vibratorAlarm()
-        val notification = NotificationFile.createNotification(this, "피보호자와 연결이 끊어졌습니다.")
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
-    private fun outOfRangeAlarm() {
-        vibratorAlarm()
-        val notification = NotificationFile.createNotification(this, "피보호자가 지정 범위를 이탈했습니다.")
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
-    private fun inOfRangeAlarm() {
-        vibratorAlarm()
-        val notification = NotificationFile.createNotification(this, "피보호자가 지정 범위로 들어왔습니다.")
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
-    private fun faildReceiveLocAlram() {
-        vibratorAlarm()
-        val notification = NotificationFile.createNotification(this, "피보호자의 위치를 받아오지 못했습니다.")
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
-    private fun receiveHelpCall() {
-        vibratorAlarm()
-        val notification = NotificationFile.createNotification(this, "피보호자로부터 도움요청을 받았습니다.")
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
-    private fun cantPrediction() {
-        vibratorAlarm()
-        val notification = NotificationFile.createNotification(this, "피보호자가 예측 경로를 벗어났습니다.")
+        val notification = NotificationFile.createNotification(this, msg)
         startForeground(NOTIFICATION_ID, notification)
     }
 
@@ -526,29 +469,26 @@ class ForegroundService : Service() {
         val vibrationEffect = VibrationEffect.createOneShot(2000, 100)
         vibrator.vibrate(vibrationEffect)
     }
-
-    private fun setAlarm(){                 //시간 알람 설정
-
-    }
-
-    private fun delAlarm(){                 //시간 알람 삭제
-        
-    }
-    //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-    fun encrypt(input: String, key: ByteArray, ivStr: String): String {
-        var iv = ByteArray(16)
-        SecureRandom().nextBytes(iv)
-        val cipher = Cipher.getInstance("AES")
+    //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ암호화 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    fun encrypt(input: String, key: ByteArray): String {
+        var arr = ByteArray(16)
+        var str = ""
+        while(str.length != 16){
+            SecureRandom().nextBytes(arr)
+            str = String(arr)
+        }
+        val iv = getIv(str)
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val keySpec = SecretKeySpec(key,"AES")
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, iv)
         val encrypt = cipher.doFinal(input.toByteArray());
-        return ivStr + Base64Utils.encode(encrypt)
+        return str + Base64Utils.encode(encrypt)
     }
 
     fun decrypt(input: String, key: ByteArray): String {
         var iv = getIv(input.substring(0, 16))
         var cryptText = input.substring(16, input.length)
-        val cipher = Cipher.getInstance("AES")
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val keySpec = SecretKeySpec(key,"AES")
         cipher.init(Cipher.DECRYPT_MODE, keySpec, iv)
         val decrypt = cipher.doFinal(Base64Utils.decode(cryptText))
@@ -564,13 +504,8 @@ class ForegroundService : Service() {
     }
 
     fun getKey(): ByteArray{
-        var keyStr = App.prefs.key
-        var keyArr = keyStr.split(",")
-        var keyList: MutableList<Byte> = mutableListOf()
-        for(i in 0 .. keyArr.size-2){
-            keyList.add(keyArr[i].toByte())
-        }
-        return keyList.toByteArray()
+        var keyArr: ByteArray = App.prefs.key.toByteArray().slice(0..31).toByteArray()
+        return keyArr
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ서비스 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun startForegroundService() {
@@ -603,9 +538,50 @@ class ForegroundService : Service() {
         override fun onProviderDisabled(provider: String) {}
     }
 
-    inner class alarmManagerReceiver: BroadcastReceiver(){
+    inner class timerReceiver: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
-            TODO("Not yet implemented")
+            if(intent != null) {
+                isSendCert = true
+                var timer = TimerThread_G(true)
+                timer.run()
+            }
+        }
+    }
+
+    inner class TimerThread_G(var isSendCert: Boolean): Thread(){
+        override fun run(){
+            sleep(5000)
+            if(isCert){
+                isCert = false
+            }else{
+                createNotification("피보호자가 인증을 수행하지 않았습니다.")
+            }
+            isSendCert = false
+        }
+    }
+
+    inner class TimerThread_W: Thread(){
+        override fun run(){
+            sleep(5000)
+            if(App.prefs.cert){
+                createNotification("인증을 수행하지 않았습니다.")
+            }
+            App.prefs.cert = false
+        }
+    }
+}
+
+class alarmManagerReceiver: BroadcastReceiver(){
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if(intent != null){
+            var rIntent = Intent("alarm")
+            val requestNum = intent.getIntExtra("num", 999999)
+            var tIntent = Intent("timer")
+            rIntent.putExtra("num", requestNum)
+            Log.e("알람", "전송")
+            App.mSocket.emit("sendCert")
+            LocalBroadcastManager.getInstance(context!!).sendBroadcast(rIntent)
+            LocalBroadcastManager.getInstance(context!!).sendBroadcast(tIntent)
         }
     }
 }

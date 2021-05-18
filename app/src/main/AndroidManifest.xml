@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:name=".App"
@@ -21,10 +23,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name="com.journeyapps.barcodescanner.CaptureActivity"
+        <activity android:name=".SetPassActivty"></activity>
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
-            tools:replace="screenOrientation"/>
-        <activity android:name=".QRCodeActivity"></activity>
+            tools:replace="screenOrientation" />
+        <activity android:name=".QRCodeActivity" />
         <activity android:name=".AlarmAddActivity" />
         <activity android:name=".RangeAddActivity" />
         <activity android:name=".AlarmSetActivity" />
@@ -57,6 +61,7 @@
         <activity android:name=".WardActivity" />
         <activity android:name=".GuardActivity" />
         <activity android:name=".RegistActivity" />
+        <receiver android:name=".alarmManagerReceiver"/>
 
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"

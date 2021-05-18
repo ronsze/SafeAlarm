@@ -15,34 +15,24 @@ import io.socket.emitter.Emitter
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.math.BigInteger
+import java.util.*
 
 class QRCodeActivity : AppCompatActivity() {
     private val context = this
     private lateinit var socketT: socketThread
     private lateinit var binding: ActivityQRCodeBinding
-
-
-    companion object {
-        val mSocket_R = App.mSocket
-        const val NOTIFICATION_ID = 20
-    }
+    val mSocket_R = App.mSocket
+    private lateinit var p: BigInteger ; private lateinit var g: BigInteger ; private lateinit var x: BigInteger
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQRCodeBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
         connectSocket()
-        mSocket_R.emit("enterRoom", App.prefs.id)
         createQRCode()
-
-        binding.okBtn.setOnClickListener {
-
-        }
-        binding.cancleBtn.setOnClickListener {
-            Toast.makeText(context, "취소되었습니다.", Toast.LENGTH_SHORT).show()
-            onBackPressed()
-        }
     }
 
     private fun connectSocket() {
@@ -53,19 +43,22 @@ class QRCodeActivity : AppCompatActivity() {
     inner class socketThread : Thread() {
         override fun run() {
             try {
-                mSocket_R.connect()
-                mSocket_R.on("regist_G", onRegistG)
-                mSocket_R.on("finish", onFinish)
+                if(!mSocket_R.connected()){
+                    mSocket_R.connect()
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            mSocket_R.emit("enterRoom", App.prefs.id)
+            mSocket_R.on("receivePrime", onReceivePrime)
+            mSocket_R.on("receiveR2", onReceiveR2)
         }
     }
 
     fun createQRCode(){
         val qrCode = QRCodeWriter()
         val bitMtx = qrCode.encode(
-            intent.getStringExtra("key"),
+            "Guard." + intent.getStringExtra("id"),
             BarcodeFormat.QR_CODE,
             350,
             350
@@ -103,7 +96,6 @@ class QRCodeActivity : AppCompatActivity() {
     fun startForeService(){                 //Foregroud서비스 시작
         val foreIntent = Intent(this, ForegroundService::class.java)
         foreIntent.action = Actions.START_FOREGROUND
-        Log.e("키는뭐노", App.prefs.key)
         startService(foreIntent)
         moveActivity()
     }
@@ -120,29 +112,29 @@ class QRCodeActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        Log.e("backpressed", "OnBackPressed")
         backActivity()
+        super.onBackPressed()
     }
 
-    private val onRegistG = Emitter.Listener{
-        Log.e("regist_G", "받음")
-        val arr = it[0].toString().split(".")
-        val code = arr[0]
-        val w_id = arr[1]
-        if(code == App.prefs.id){
-            mSocket_R.emit("ok_G", w_id)
-        }else{
-            Log.e("Regist_G", "에러")
+    private val onReceivePrime = Emitter.Listener{
+        var primeStr = it[0].toString()
+        var arr = primeStr.split(".")
+        this.p = arr[0].toBigInteger()
+        this.g = arr[1].toBigInteger()
+        var x = BigInteger(1024, Random())
+        while(x > p.subtract(1.toBigInteger())){
+            x = BigInteger(1024, Random())
         }
+        this.x = x
+        var r1 = g.modPow(x, p)
+        mSocket_R.emit("sendR1", r1.toString())
     }
 
-    private val onFinish = Emitter.Listener {
-        Log.e("onFinish", "받음")
-        val code = it[0].toString()
-        if(code == App.prefs.id){
-            registGuard()
-        }else{
-            Log.e("finish", "에러")
-        }
+    private val onReceiveR2 = Emitter.Listener {
+        val r2 = it[0].toString().toBigInteger()
+        var key = r2.modPow(x, p)
+        App.prefs.key = key.toString()
+        registGuard()
     }
 }

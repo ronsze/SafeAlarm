@@ -129,7 +129,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         listOf(37.56343044104474, 127.07975790456774),
         listOf(37.56343044104474, 127.08315374014138)
     )
-    private var next_cell = 0 ; private var isPred = false
+    private var next_cell = App.prefs.next ; private var isPred = false
     val arrowheadPath = ArrowheadPathOverlay()
 
     companion object {
@@ -150,7 +150,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.getMapAsync(this)
 
         LocalBroadcastManager.getInstance(this).registerReceiver(locReceiver(), IntentFilter(App.CNG_LOC))
-        LocalBroadcastManager.getInstance(this).registerReceiver(drawReceiver(), IntentFilter("prediction"))
+
     }
 
     override fun onMapReady(naverMap: NaverMap) {                                           //지도 최초 생성
@@ -182,7 +182,9 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             naverMap.cameraPosition.zoom
         )
         naverMap.cameraPosition = cameraPosition
+        isPred = App.prefs.isPred
         if(isPred){
+            next_cell = App.prefs.next
             drawPath(Pair(latitude, longitude), next_cell)
         }
     }
@@ -223,19 +225,6 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             val longitude = intent?.getDoubleExtra("longitude", App.prefs.s_lng.toDouble())
             if(latitude != null && longitude != null){
                 changePosition(latitude, longitude)
-            }
-        }
-    }
-
-    inner class drawReceiver: BroadcastReceiver(){
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val now = intent?.getIntExtra("now_cell", 0)
-            val next = intent?.getIntExtra("next_cell", 0)
-            if(now != null && next != null){
-                isPred = true
-                next_cell = next
-            }else if(now == -1 && next == -1){
-
             }
         }
     }

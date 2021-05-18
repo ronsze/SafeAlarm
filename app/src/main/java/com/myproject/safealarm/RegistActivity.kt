@@ -17,6 +17,8 @@ import io.socket.emitter.Emitter
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.math.BigInteger
+import java.util.*
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
@@ -26,11 +28,9 @@ class RegistActivity : AppCompatActivity() {
     private var keyStr: String = ""
     private lateinit var socketT: socketThread
     private lateinit var room: String
-
-    companion object {
-        val mSocket_R = App.mSocket
-        const val NOTIFICATION_ID = 20
-    }
+    val mSocket_R = App.mSocket
+    private lateinit var p: BigInteger ; private lateinit var g: BigInteger
+    private var primeStr = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,10 +40,12 @@ class RegistActivity : AppCompatActivity() {
 
         binding.GuardBtn.setOnClickListener {
             var qrIntent = Intent(this, QRCodeActivity::class.java)
-            qrIntent.putExtra("key", createKeyStr())
+            qrIntent.putExtra("id", App.prefs.id)
             startActivity(qrIntent)
+            finish()
         }
         binding.WardBtn.setOnClickListener {
+            connectSocket()
             scanQRCode()
         }
     }
@@ -51,31 +53,21 @@ class RegistActivity : AppCompatActivity() {
     private fun connectSocket() {
         socketT = socketThread()
         socketT.run()
+        Log.e("소켓켓", mSocket_R.connected().toString())
     }
 
     inner class socketThread : Thread() {
         override fun run() {
             try {
-                mSocket_R.connect()
-                mSocket_R.on("ok_W", onOK)
+                if(!mSocket_R.connected()){
+                    mSocket_R.connect()
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            mSocket_R.on("receiveR1", onReceiveR1)
+            mSocket_R.on("callbackPrime", onCallbackPrime)
         }
-    }
-
-    fun createKeyStr(): String{
-        var str = "Guard."
-        val keygen = KeyGenerator.getInstance("AES")
-        keygen.init(256)
-        val key: SecretKey = keygen.generateKey()
-        str += App.prefs.id + "."
-        for(i in 0 .. key.encoded.size-1){
-            keyStr += key.encoded[i].toString() + ","
-        }
-        App.prefs.key = keyStr
-        str += keyStr
-        return str
     }
 
     fun scanQRCode(){
@@ -96,15 +88,13 @@ class RegistActivity : AppCompatActivity() {
             } else {
                 val QRArr = result.contents.split(".")
                 if (QRArr[0] != "Guard") {
-                    Log.e("this", "잘못된 QR코드입니다.")
+                    Log.e("this", "잘못된 QR코드입니다.2")
                     finish()
                 } else {
-                    connectSocket()
-                    mSocket_R.emit("enterRoom", App.prefs.id)
-                    Log.e("this", result.contents)
                     var code = QRArr[1]
-                    keyStr = QRArr[2]
-                    App.prefs.key = keyStr
+                    Log.e("code", code)
+                    mSocket_R.emit("enterRoom", code)
+                    mSocket_R.emit("getPrime", App.prefs.id)
                     registWard(code)
                 }
             }
@@ -115,7 +105,6 @@ class RegistActivity : AppCompatActivity() {
     }
 
     fun registWard(code: String){                  //피보호자 등록
-        Log.e("code", code)
         Singleton.server.registWard(App.prefs.id, code).enqueue(object:Callback<ResponseDC>{
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.d("피보호자 등록", "실패")
@@ -123,7 +112,6 @@ class RegistActivity : AppCompatActivity() {
             }
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
                 Log.d("피보호자 등록", "성공")
-                mSocket_R.emit("regist_W", code + "." + App.prefs.id)
                 room = code
             }
         })
@@ -141,19 +129,31 @@ class RegistActivity : AppCompatActivity() {
         finish()
     }
 
-    private val onOK = Emitter.Listener {
+    private val onCallbackPrime = Emitter.Listener {
+        var primeStr = it[0].toString()
+        primeStr = primeStr.substring(2, primeStr.length - 2)
+        val arr = primeStr.split(".")
+        this.primeStr = primeStr
+        this.p = arr[0].toBigInteger()
+        this.g = arr[1].toBigInteger()
+        mSocket_R.emit("sendPrime", primeStr)
+    }
+
+    private val onReceiveR1 = Emitter.Listener {
         try {
-            Log.e("onOK", "받음")
-            val id = it[0].toString()
-            if (id == App.prefs.id) {
-                App.prefs.regKey = true
-                App.prefs.role = "Ward"
-                App.prefs.room = room
-                mSocket_R.emit("finish", room)
-                startForeService()
-            } else {
-                Log.e("onOK", "에러")
+            val r1 = it[0].toString().toBigInteger()
+            var y = BigInteger(1024, Random())
+            while(y > p.subtract(1.toBigInteger())){
+                y = BigInteger(1024, Random())
             }
+            val r2 = g.modPow(y, p)
+            val key = r1.modPow(y, p)
+            App.prefs.key = key.toString()
+            App.prefs.regKey = true
+            App.prefs.role = "Ward"
+            App.prefs.room = room
+            mSocket_R.emit("sendR2", r2.toString())
+            startForeService()
         }catch (e: Exception){
             e.printStackTrace()
         }
