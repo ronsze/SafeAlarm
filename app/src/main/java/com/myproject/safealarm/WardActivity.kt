@@ -25,7 +25,7 @@ class WardActivity : AppCompatActivity() {
         }
 
         binding.infoBtn.setOnClickListener {
-            startActivity(Intent(this, MissingInfoActivity::class.java))
+            startActivity(Intent(this, WardInfoActivity::class.java))
         }
     }
 }

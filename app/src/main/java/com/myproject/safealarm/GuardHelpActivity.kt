@@ -1,10 +1,28 @@
 package com.myproject.safealarm
 
 import android.content.DialogInterface
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.myproject.safealarm.databinding.ActivityGuardHelpBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import org.json.JSONException
+import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import java.lang.Exception
 
 class GuardHelpActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGuardHelpBinding
@@ -35,7 +53,7 @@ class GuardHelpActivity : AppCompatActivity() {
             override fun onClick(dialog: DialogInterface?, which: Int){
                 when(which){
                     DialogInterface.BUTTON_NEGATIVE -> {
-                        sendInfo()
+                        sendInfo(binding.lookEdit.text.toString(), binding.extraEdit.text.toString(), "eirth")
                     }
                 }
             }
@@ -45,6 +63,45 @@ class GuardHelpActivity : AppCompatActivity() {
         builder.show()
     }
 
-    private fun sendInfo(){
+    private fun sendInfo(looks: String, extra2: String, loc: String){
+        var file = File("${getExternalFilesDir(Environment.DIRECTORY_PICTURES)}/${App.prefs.id}.png")
+        var requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file)
+        var body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+        var json = JSONObject()
+        try{
+            json.put("name", App.prefs.name)
+            json.put("age", App.prefs.age)
+            json.put("sex", App.prefs.sex)
+            json.put("height", App.prefs.height)
+            json.put("number", App.prefs.number)
+            json.put("extra", App.prefs.extra)
+            json.put("looks", looks)
+            json.put("extra2", extra2)
+            json.put("loc", loc)
+        }catch (e: JSONException){
+            e.printStackTrace()
+        }
+        Singleton.server.postMissingInfo(App.prefs.id, json).enqueue(object : Callback<ResponseDC> {
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                Log.d("피보호자 정보", "성공")
+            }
+
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                Log.d("피보호자 정보", "실패")
+            }
+
+        })
+
+        Singleton.server.postPhoto(body).enqueue(object : Callback<ResponseDC> {
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                Log.d("이미지 정보", "성공")
+            }
+
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                Log.d("이미지 정보", "실패")
+            }
+
+        })
     }
 }

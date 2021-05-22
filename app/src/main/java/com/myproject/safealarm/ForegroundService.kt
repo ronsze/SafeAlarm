@@ -27,8 +27,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.security.MessageDigest
-import java.security.SecureRandom
+import java.security.*
+import java.security.spec.PKCS8EncodedKeySpec
 import java.time.Duration
 import java.util.*
 import javax.crypto.Cipher
@@ -50,21 +50,81 @@ class ForegroundService : Service() {
     private var isFix_S = false
     private var now_cell = 0
     private lateinit var key: ByteArray
+    private lateinit var privateKey: PrivateKey
     private var isSendCert = false
     private var isCert = false
     private var first = false
 
     private var entireData: MutableList<MutableList<Int>> = mutableListOf(
-        mutableListOf(56, 57, 58, 59, 60, 70, 79, 78, 77, 65, 55, 45, 35, 25, 15, 5),
-        mutableListOf(56, 57, 58, 59, 49, 59, 69, 68, 67, 65, 55, 45, 35, 25, 24, 23),
-        mutableListOf(56, 57, 58, 59, 69, 70, 79, 78, 77, 65, 55, 45, 35, 25, 15, 5),
-        mutableListOf(56, 57, 58, 48, 60, 70, 71, 72, 73, 63, 53, 43, 33, 23, 13, 3),
-        mutableListOf(56, 57, 58, 68, 60, 70, 60, 61, 62, 63, 64, 74, 84, 94, 95, 96),
-        mutableListOf(56, 57, 67, 68, 69, 79, 78, 77, 67, 57, 47, 37, 27, 17, 7, 6),
-        mutableListOf(56, 57, 47, 59, 60, 70, 71, 72, 73, 63, 54, 44, 43, 42, 32, 22),
-        mutableListOf(56, 66, 58, 59, 60, 70, 71, 72, 73, 63, 54, 44, 45, 46, 36, 46),
-        mutableListOf(56, 46, 58, 59, 60, 70, 71, 72, 73, 63, 54, 53, 43, 33, 32, 31),
-        mutableListOf(56, 55, 58, 59, 60, 70, 71, 72, 73, 63, 54, 55, 45, 35, 36, 26)
+        mutableListOf(56,57,58,59,60,50,49,48,47,46,56),
+        mutableListOf(56,57,67,68,69,59,58,48,47,46,56),
+        mutableListOf(56,57,67,77,78,79,69,59,58,57,56),
+        mutableListOf(56,57,58,59,49,48,47,46,56),
+        mutableListOf(56,57,58,68,67,66,56),
+        mutableListOf(56,57,58,68,67,57,47,46,56),
+        mutableListOf(56,57,58,48,47,57,67,66,56),
+        mutableListOf(56,57,58,59,69,68,67,57,47,46,45,55,56),
+        mutableListOf(56,46,47,48,58,68,67,57,56),
+        mutableListOf(56,66,67,68,69,59,58,48,38,37,47,46,56),
+        mutableListOf(56,55,45,46,36,37,38,39,49,59,69,68,67,66,56),
+        mutableListOf(56,55,45,46,47,48,58,68,67,66,56),
+        mutableListOf(56,55,65,66,67,57,58,68,67,66,56),
+        mutableListOf(56,66,65,55,45,55,56),
+        mutableListOf(56,66,67,68,69,59,58,48,47,46,45,55,56),
+        mutableListOf(56,57,58,59,60,50,49,48,47,46,56),
+        mutableListOf(56,57,67,68,69,59,58,48,47,46,56),
+        mutableListOf(56,46,47,48,58,68,67,57,56),
+        mutableListOf(56,66,67,68,69,59,58,48,38,37,47,46,56),
+        mutableListOf(56,55,45,46,36,37,38,39,49,59,69,68,67,66,56),
+        mutableListOf(56,55,45,46,47,48,58,68,67,66,56),
+        mutableListOf(56,55,65,66,67,57,58,68,67,66,56),
+        mutableListOf(56,66,65,55,45,55,56),
+        mutableListOf(56,66,67,68,69,59,58,48,47,46,45,55,56),
+        mutableListOf(56,57,58,59,60,50,49,48,47,46,56),
+        mutableListOf(56,57,67,68,69,59,58,48,47,46,56),
+        mutableListOf(56,46,47,48,58,68,67,57,56),
+        mutableListOf(56,66,67,68,69,59,58,48,38,37,47,46,56),
+        mutableListOf(56,55,45,46,36,37,38,39,49,59,69,68,67,66,56),
+        mutableListOf(56,55,45,46,47,48,58,68,67,66,56),
+        mutableListOf(56,55,65,66,67,57,58,68,67,66,56),
+        mutableListOf(56,66,65,55,45,55,56),
+        mutableListOf(56,66,67,68,69,59,58,48,47,46,45,55,56),
+        mutableListOf(55,57,58,59,60,50,49,48,47,46,56),
+        mutableListOf(55,57,67,68,69,59,58,48,47,46,56),
+        mutableListOf(55,46,47,48,58,68,67,57,56),
+        mutableListOf(55,66,67,68,69,59,58,48,38,37,47,46,56),
+        mutableListOf(55,55,45,46,36,37,38,39,49,59,69,68,67,66,56),
+        mutableListOf(55,55,45,46,47,48,58,68,67,66,56),
+        mutableListOf(55,55,65,66,67,57,58,68,67,66,56),
+        mutableListOf(55,46,45,55,56),
+        mutableListOf(55,46,47,48,49,59,58,57,56),
+        mutableListOf(55,46,47,48,58,68,67,66,56),
+        mutableListOf(55,66,65,55,45,55,56),
+        mutableListOf(55,66,67,68,69,59,58,48,47,46,45,55,56),
+        mutableListOf(66,57,58,59,60,50,49,48,47,46,56),
+        mutableListOf(66,57,67,68,69,59,58,48,47,46,56),
+        mutableListOf(66,46,47,48,58,68,67,57,56),
+        mutableListOf(66,66,67,68,69,59,58,48,38,37,47,46,56),
+        mutableListOf(66,55,45,46,36,37,38,39,49,59,69,68,67,66,56),
+        mutableListOf(66,55,45,46,47,48,58,68,67,66,56),
+        mutableListOf(66,55,65,66,67,57,58,68,67,66,56),
+        mutableListOf(66,46,45,55,56),
+        mutableListOf(66,46,47,48,49,59,58,57,56),
+        mutableListOf(66,46,47,48,58,68,67,66,56),
+        mutableListOf(66,66,65,55,45,55,56),
+        mutableListOf(66,66,67,68,69,59,58,48,47,46,45,55,56),
+        mutableListOf(57,57,58,59,60,50,49,48,47,46,56),
+        mutableListOf(57,57,67,68,69,59,58,48,47,46,56),
+        mutableListOf(57,46,47,48,58,68,67,57,56),
+        mutableListOf(57,66,67,68,69,59,58,48,38,37,47,46,56),
+        mutableListOf(57,55,45,46,36,37,38,39,49,59,69,68,67,66,56),
+        mutableListOf(57,55,45,46,47,48,58,68,67,66,56),
+        mutableListOf(57,55,65,66,67,57,58,68,67,66,56),
+        mutableListOf(57,46,45,55,56),
+        mutableListOf(57,46,47,48,49,59,58,57,56),
+        mutableListOf(57,46,47,48,58,68,67,66,56),
+        mutableListOf(57,66,65,55,45,55,56),
+        mutableListOf(57,66,67,68,69,59,58,48,47,46,45,55,56)
     )
     private var tmpData: MutableList<MutableList<Int>> = mutableListOf()
 
@@ -198,18 +258,24 @@ class ForegroundService : Service() {
             var location = it[0].toString()
             try {
                 val `object` = JSONObject(location)
-                val latitude = decrypt(`object`.getString("latitude"), key).toDouble()
-                val longitude = decrypt(`object`.getString("longitude"), key).toDouble()
-                if (latitude == 0.0 && longitude == 0.0) {
-                    locationCount += 1
-                } else {
-                    locationCount = 0
-                    cngMapLocation(latitude, longitude)
-                    first = true
-                    var cell = getCell(latitude, longitude)
-                    if(first){
-                        checkCell(cell)
+                val deLat = decrypt(`object`.getString("latitude"), key)
+                val deLng = decrypt(`object`.getString("longitude"), key)
+                if(verifSign(deLat) && verifSign(deLng)){
+                    val latitude = deLat.split("SiGn")[0].toDouble()
+                    val longitude = deLng.split("SiGn")[0].toDouble()
+                    if (latitude == 0.0 && longitude == 0.0) {
+                        locationCount += 1
+                    } else {
+                        locationCount = 0
+                        cngMapLocation(latitude, longitude)
+                        first = true
+                        var cell = getCell(latitude, longitude)
+                        if (first) {
+                            checkCell(cell)
+                        }
                     }
+                }else{
+                    locationCount += 1
                 }
             } catch (e: JSONException) {
                 locationCount += 1
@@ -280,9 +346,10 @@ class ForegroundService : Service() {
             } else { }
         }
         try {
-            json.put("latitude", encrypt(lat.toString(), key))
-            json.put("longitude", encrypt(lng.toString(), key))
-            json.put("provider", provider_str)
+            var enLat = encrypt(lat.toString(), key)
+            var enLng = encrypt(lng.toString(), key)
+            json.put("latitude", enLat)
+            json.put("longitude", enLng)
             json.put("fixed", fix)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -477,11 +544,15 @@ class ForegroundService : Service() {
             SecureRandom().nextBytes(arr)
             str = String(arr)
         }
+        var plainText = input.plus(getSign(input))
+        Log.e("평뮨", input)
+        Log.e("사인123", getSign(input))
+        Log.e("플래인", plainText)
         val iv = getIv(str)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val keySpec = SecretKeySpec(key,"AES")
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, iv)
-        val encrypt = cipher.doFinal(input.toByteArray());
+        val encrypt = cipher.doFinal(plainText.toByteArray());
         return str + Base64Utils.encode(encrypt)
     }
 
@@ -505,8 +576,37 @@ class ForegroundService : Service() {
 
     fun getKey(): ByteArray{
         var keyArr: ByteArray = App.prefs.key.toByteArray().slice(0..31).toByteArray()
+        var pkStr = App.prefs.privateKey
+        val pk = Base64Utils.decode(pkStr)
+
+        val kf = KeyFactory.getInstance("RSA")
+        val private = kf.generatePrivate(PKCS8EncodedKeySpec(pk))
+        this.privateKey = private
         return keyArr
     }
+
+    fun getSign(input: String): String{
+        val hash: ByteArray
+        try{
+            val md = MessageDigest.getInstance("SHA-256")
+            md.update(input.toByteArray())
+            hash = md.digest()
+        }catch (e: CloneNotSupportedException){
+            throw DigestException("couldn't make digest of patial content")
+        }
+        return "SiGn"+Base64Utils.encode(hash)
+    }
+
+    fun verifSign(input: String): Boolean{
+        var arr = input.split("SiGn")
+        val cipherText = arr[0]
+        val sign = arr[1]
+        val hash = getSign(cipherText).substring(4)
+        Log.e("싸인1", sign)
+        Log.e("싸인2", hash)
+        return hash == sign
+    }
+
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ서비스 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun startForegroundService() {
         val notification = NotificationFile.createNotification(this, " ")

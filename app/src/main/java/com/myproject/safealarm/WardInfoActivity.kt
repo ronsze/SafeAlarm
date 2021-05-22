@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -65,7 +66,7 @@ class WardInfoActivity : AppCompatActivity() {
     }
 
     private fun saveBitmapToJpeg(bitmap: Bitmap){
-        var tempFile = File(cacheDir, "wardImage")
+        var tempFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${App.prefs.id}.png")
         try{
             tempFile.createNewFile()
             var out = FileOutputStream(tempFile)
@@ -80,12 +81,17 @@ class WardInfoActivity : AppCompatActivity() {
         val sAdapter = ArrayAdapter.createFromResource(this, R.array.sex, android.R.layout.simple_spinner_dropdown_item)
         sAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.sexSpin.adapter = sAdapter
-        binding.sexSpin.setSelection(App.prefs.sex)
+        if(App.prefs.sex == "남"){
+            binding.sexSpin.setSelection(0)
+        }else{
+            binding.sexSpin.setSelection(1)
+        }
+
     }
 
     private fun loadInfo(){
         try{
-            var imgPath = "${cacheDir}/wardImage"
+            var imgPath = "${getExternalFilesDir(Environment.DIRECTORY_PICTURES)}/${App.prefs.id}.png"
             var bm = BitmapFactory.decodeFile(imgPath)
             binding.imageView.setImageBitmap(bm)
         }catch(e: Exception){
@@ -115,7 +121,11 @@ class WardInfoActivity : AppCompatActivity() {
             App.prefs.height = binding.heightEdit.text.toString()
             App.prefs.age = binding.ageEdit.text.toString()
             App.prefs.number = binding.phoneEdit.text.toString()
-            App.prefs.sex = binding.sexSpin.selectedItemPosition
+            if(binding.sexSpin.selectedItemPosition == 0){
+                App.prefs.sex = "남"
+            }else{
+                App.prefs.sex = "여"
+            }
             App.prefs.extra = binding.extraEdit.text.toString()
             finish()
         }

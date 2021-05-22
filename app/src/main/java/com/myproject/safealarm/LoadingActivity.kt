@@ -10,20 +10,32 @@ import java.util.Random
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.common.util.Base64Utils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.security.KeyPairGenerator
+import java.security.SecureRandom
+import org.bouncycastle.asn1.x500.X500Name
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
+import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
+import org.bouncycastle.util.io.pem.PemObject
+import java.io.StringWriter
+import kotlin.math.sign
 
 class LoadingActivity : AppCompatActivity() {
     val context = this
     val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
                                         Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
         App.connectSocket()
-        Log.e("씨발123123", App.mSocket.connected().toString())
 
         checkPermission()
     }
@@ -48,12 +60,47 @@ class LoadingActivity : AppCompatActivity() {
                 createId()
             }
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                App.prefs.idOn = true
+                App.prefs.id = rNum.toString()
+                createX509()
                 startActivity(Intent(context, RegistActivity::class.java))
                 finish()
             }
         })
-        App.prefs.idOn = true
-        App.prefs.id = rNum.toString()
+    }
+
+    private fun createX509(){
+        val keygen = KeyPairGenerator.getInstance("RSA")
+        keygen.initialize(2048, SecureRandom())
+        val keyPair = keygen.genKeyPair()
+
+        App.prefs.privateKey = Base64Utils.encode(keyPair.private.encoded)
+
+        val sigAlg = "SHA256withRSA"
+        val params = "C=kr,O=SuwonUniv,CN=${App.prefs.id}"
+        val p10builder: PKCS10CertificationRequestBuilder = JcaPKCS10CertificationRequestBuilder(
+            X500Name(params), keyPair.public)
+        val csBuilder = JcaContentSignerBuilder(sigAlg)
+        csBuilder.setProvider(BouncyCastleProvider())
+        val signer = csBuilder.build(keyPair.private)
+        var p10 = p10builder.build(signer)
+
+        val pemObject = PemObject("CERTIFICATE REQUEST", p10.encoded)
+        var csr = StringWriter()
+        var jcaPEMWriter = JcaPEMWriter(csr)
+        jcaPEMWriter.writeObject(pemObject)
+        jcaPEMWriter.close()
+        csr.close()
+        App.prefs.csr = csr.toString()
+
+        Singleton.server.postCSR(App.prefs.id, App.prefs.csr).enqueue(object:Callback<ResponseDC>{
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                Log.e("성공", "성공")
+            }
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                Log.e("실패", "실패")
+            }
+        })
     }
 
     private fun moveActivity(){             //액티비티 이동

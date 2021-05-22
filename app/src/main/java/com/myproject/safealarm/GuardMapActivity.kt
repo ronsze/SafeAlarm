@@ -181,6 +181,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             LatLng(latitude, longitude),
             naverMap.cameraPosition.zoom
         )
+        cngLocation(latitude, longitude)
         naverMap.cameraPosition = cameraPosition
         isPred = App.prefs.isPred
         if(isPred){
@@ -201,12 +202,21 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun cngLocation(latitude: Double, longitude: Double){           //위도, 경도를 주소로 변경
+        var lat_s = latitude.toString() ; var lng_s = longitude.toString()
+        var lat = lat_s.toDouble()
+        var lng = lng_s.toDouble()
+        if(lat_s.length >= 7){
+            lat_s.substring(0, 6).toDouble()
+        }
+        if(lng_s.length >= 9){
+            lng = lng_s.substring(0, 8).toDouble()
+        }
         val mGeocoder = Geocoder(this, Locale.KOREAN)
         var mResultList: List<Address>? = null
         var currentLocation = ""
         try{
             mResultList = mGeocoder.getFromLocation(
-                latitude, longitude, 1
+                lat, lng, 1
             )
         }catch(e: IOException){
             e.printStackTrace()

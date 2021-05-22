@@ -12,7 +12,7 @@ class PreferenceManager(context: Context) {
     val ROOM_NUM = "room"
     val SAVE_LAT = "s_lat"
     val SAVE_LNG = "s_lng"
-    val RANGE_KM = "range_km"
+    val PRIVATE_KEY = "privateKey"
     val P_KEY = "key"
     val PASSWORD = "pass"
     val CERTIFICATION = "cert"
@@ -28,6 +28,8 @@ class PreferenceManager(context: Context) {
     val G_NUMBER = "number"
     val W_SEX = "sex"
     val EXTRA = "extra"
+    var CSR = "csr"
+    var PUBLIC_KEY = "publicKey"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
 
     var s_lat: String
@@ -110,11 +112,23 @@ class PreferenceManager(context: Context) {
         get() = prefs.getString(W_AGE, "")!!
         set(value) = prefs.edit().putString(W_AGE, value).apply()
 
-    var sex: Int
-        get() = prefs.getInt(W_SEX, -1)!!
-        set(value) = prefs.edit().putInt(W_SEX, value).apply()
+    var sex: String
+        get() = prefs.getString(W_SEX, "")!!
+        set(value) = prefs.edit().putString(W_SEX, value).apply()
 
     var extra: String
         get() = prefs.getString(EXTRA, "")!!
         set(value) = prefs.edit().putString(EXTRA, value).apply()
+
+    var privateKey: String
+        get() = prefs.getString(PRIVATE_KEY, "")!!
+        set(value) = prefs.edit().putString(PRIVATE_KEY, value).apply()
+
+    var publicKey: String
+        get() = prefs.getString(PUBLIC_KEY, "")!!
+        set(value) = prefs.edit().putString(PUBLIC_KEY, value).apply()
+
+    var csr: String
+        get() = prefs.getString(CSR, "")!!
+        set(value) = prefs.edit().putString(CSR, value).apply()
 }
