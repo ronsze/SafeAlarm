@@ -3,12 +3,10 @@ package com.myproject.safealarm
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.graphics.drawable.toBitmap
@@ -78,7 +76,7 @@ class WardInfoActivity : AppCompatActivity() {
     }
 
     private fun spinnerSet(){
-        val sAdapter = ArrayAdapter.createFromResource(this, R.array.sex, android.R.layout.simple_spinner_dropdown_item)
+        val sAdapter = ArrayAdapter.createFromResource(this, R.array.sex, R.layout.spinner_font_range)
         sAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.sexSpin.adapter = sAdapter
         if(App.prefs.sex == "남"){

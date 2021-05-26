@@ -14,17 +14,17 @@ class WardActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        binding.helpBtn.setOnClickListener {
+        binding.helpLayout.setOnClickListener {
             val intent = Intent(this, ForegroundService::class.java)
             intent.action = Actions.HELP_CALL_WARD
             startService(intent)
         }
 
-        binding.settingBtn.setOnClickListener {
+        binding.setLayout.setOnClickListener {
             startActivity(Intent(this, WardSettingActivity::class.java))
         }
 
-        binding.infoBtn.setOnClickListener {
+        binding.infoLayout.setOnClickListener {
             startActivity(Intent(this, WardInfoActivity::class.java))
         }
     }

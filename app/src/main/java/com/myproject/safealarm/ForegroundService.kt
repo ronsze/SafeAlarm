@@ -27,8 +27,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.RuntimeException
 import java.security.*
 import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
 import java.time.Duration
 import java.util.*
 import javax.crypto.Cipher
@@ -136,15 +138,12 @@ class ForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             Actions.START_FOREGROUND -> {
-                Log.e("Foreground서비스", "시작 인텐트 받음")
                 startForegroundService()
             }
             Actions.STOP_FOREGROUND -> {
-                Log.e("Foreground서비스", "종료 인텐트 받음")
                 stopForegroundService()
             }
             Actions.HELP_CALL_WARD -> {
-                Log.e("Foreground서비스", "피보호자 도움 요청 인텐트 받음")
                 mSocket.emit("HelpCall_W")
             }
         }
@@ -221,7 +220,10 @@ class ForegroundService : Service() {
     private val onRequestLoc = Emitter.Listener {               //좌표 요청 받음
         if (role == "Ward") {
             try{
-                getLatLng()
+                if(verifSign(it[0].toString())){
+                    getLatLng()
+                }else{
+                }
             }catch (e:Exception){
                 e.printStackTrace()
             }
@@ -263,6 +265,8 @@ class ForegroundService : Service() {
                 if(verifSign(deLat) && verifSign(deLng)){
                     val latitude = deLat.split("SiGn")[0].toDouble()
                     val longitude = deLng.split("SiGn")[0].toDouble()
+                    Log.e("위도", latitude.toString())
+                    Log.e("경도", longitude.toString())
                     if (latitude == 0.0 && longitude == 0.0) {
                         locationCount += 1
                     } else {
@@ -275,6 +279,7 @@ class ForegroundService : Service() {
                         }
                     }
                 }else{
+                    Log.e("서명검증 위치 받음", "실패")
                     locationCount += 1
                 }
             } catch (e: JSONException) {
@@ -421,7 +426,10 @@ class ForegroundService : Service() {
                     createNotification("피보호자의 위치를 받아오지 못했습니다.")
                     locationCount = 0
                 }else{
-                    mSocket.emit("requestLoc")
+                    var arr = ByteArray(10)
+                    SecureRandom().nextBytes(arr)
+                    var str = Base64Utils.encode(arr)
+                    mSocket.emit("requestLoc", str+getSign(str))
                     locationCount += 1
                 }
             }
@@ -432,14 +440,12 @@ class ForegroundService : Service() {
         if(cell != now_cell){
             now_cell = cell
             val next_cell = predictionPath(cell)
-            Log.e("씨발", "now : ${now_cell}, next : ${next_cell}")
             if(next_cell == 0){
                 createNotification("피보호자가 예측 경로를 벗어났습니다.")
                 drawPath(-1, -1)
                 App.prefs.isPred = false
             }else if(next_cell == -1) {
                 drawPath(-1, -1)
-                Log.e("예측", "예측종료")
                 App.prefs.isPred = false
             }
             else{
@@ -545,9 +551,6 @@ class ForegroundService : Service() {
             str = String(arr)
         }
         var plainText = input.plus(getSign(input))
-        Log.e("평뮨", input)
-        Log.e("사인123", getSign(input))
-        Log.e("플래인", plainText)
         val iv = getIv(str)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val keySpec = SecretKeySpec(key,"AES")
@@ -594,17 +597,59 @@ class ForegroundService : Service() {
         }catch (e: CloneNotSupportedException){
             throw DigestException("couldn't make digest of patial content")
         }
-        return "SiGn"+Base64Utils.encode(hash)
+        return "SiGn"+ rsaEncrypt(Base64Utils.encode(hash), getPrivateKey())
     }
 
     fun verifSign(input: String): Boolean{
         var arr = input.split("SiGn")
         val cipherText = arr[0]
-        val sign = arr[1]
-        val hash = getSign(cipherText).substring(4)
-        Log.e("싸인1", sign)
-        Log.e("싸인2", hash)
-        return hash == sign
+        val sign = rsaDecrypt(arr[1], getPublicKey())
+
+        val hash: ByteArray
+        try{
+            val md = MessageDigest.getInstance("SHA-256")
+            md.update(cipherText.toByteArray())
+            hash = md.digest()
+        }catch (e: CloneNotSupportedException){
+            throw DigestException("couldn't make digest of patial content")
+        }
+        var hSign = Base64Utils.encode(hash)
+        return hSign == sign
+    }
+
+    fun getPublicKey(): PublicKey{
+        var kf = KeyFactory.getInstance("RSA")
+        var public = kf.generatePublic(X509EncodedKeySpec(Base64Utils.decode(App.prefs.publicKey)))
+        return public
+    }
+
+    fun getPrivateKey(): PrivateKey{
+        var kf = KeyFactory.getInstance("RSA")
+        var private = kf.generatePrivate(PKCS8EncodedKeySpec(Base64Utils.decode(App.prefs.privateKey)))
+        return private
+    }
+
+    fun rsaEncrypt(input: String, key: PrivateKey): String{
+        try {
+            val cipher = Cipher.getInstance("RSA")
+            cipher.init(Cipher.ENCRYPT_MODE, key)
+            val encrypt = cipher.doFinal(input.toByteArray())
+            return Base64Utils.encode(encrypt)
+        }catch (e: Exception){
+            throw RuntimeException(e)
+        }
+    }
+
+    fun rsaDecrypt(input: String, key: PublicKey): String{
+        try {
+            var byteEncrypt: ByteArray = Base64Utils.decode(input)
+            val cipher = Cipher.getInstance("RSA")
+            cipher.init(Cipher.DECRYPT_MODE, key)
+            val decrypt = cipher.doFinal(byteEncrypt)
+            return String(decrypt)
+        }catch (e: Exception){
+            throw RuntimeException(e)
+        }
     }
 
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ서비스 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -676,9 +721,12 @@ class alarmManagerReceiver: BroadcastReceiver(){
         if(intent != null){
             var rIntent = Intent("alarm")
             val requestNum = intent.getIntExtra("num", 999999)
+            val hour = intent.getStringExtra("hour")
+            val min = intent.getStringExtra("min")
             var tIntent = Intent("timer")
             rIntent.putExtra("num", requestNum)
-            Log.e("알람", "전송")
+            rIntent.putExtra("hour", hour)
+            rIntent.putExtra("min", min)
             App.mSocket.emit("sendCert")
             LocalBroadcastManager.getInstance(context!!).sendBroadcast(rIntent)
             LocalBroadcastManager.getInstance(context!!).sendBroadcast(tIntent)

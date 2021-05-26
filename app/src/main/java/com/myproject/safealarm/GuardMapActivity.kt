@@ -197,8 +197,6 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             LatLng(next_latLng[0], next_latLng[1])
         )
         arrowheadPath.map = naverMap
-        Log.e("셀 번호", "다음 셀 : ${next_cell}")
-        Log.e("셀 좌표", "다음 셀 : ${next_latLng}")
     }
 
     private fun cngLocation(latitude: Double, longitude: Double){           //위도, 경도를 주소로 변경
@@ -226,7 +224,6 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             currentLocation = currentLocation.substring(5)
         }
         binding.locationTxt.setText(currentLocation)
-        Log.d("현재 위치", currentLocation)
     }
 
     inner class locReceiver: BroadcastReceiver(){                                           //브로드 캐스트 리시버

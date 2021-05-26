@@ -13,21 +13,62 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/location_btn"
+        <LinearLayout
+            android:id="@+id/map_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="위치 확인"
-            android:textSize="30sp" />
+            android:layout_marginBottom="3dp"
+            android:layout_marginRight="3dp"
+            android:background="#ECCCCC"
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/help_btn"
+            <ImageView
+                android:id="@+id/imageView6"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/map_img" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="위치 확인"
+                android:textColor="#070707"
+                android:textSize="30sp"
+                android:paddingBottom="20dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/help_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="도움 요청"
-            android:textSize="30sp" />
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="3dp"
+            android:background="#ECCCCC"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView5"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/missing_img" />
+
+            <TextView
+                android:id="@+id/textView10"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="실종 등록"
+                android:textColor="#070707"
+                android:textSize="30sp"
+                android:paddingBottom="20dp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -37,20 +78,62 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/setting_btn"
+        <LinearLayout
+            android:id="@+id/set_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="설정"
-            android:textSize="30sp" />
+            android:layout_marginTop="3dp"
+            android:layout_marginRight="3dp"
+            android:background="#ECCCCC"
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/info_btn"
+            <ImageView
+                android:id="@+id/imageView8"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/set_img" />
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="설정"
+                android:textColor="#070707"
+                android:textSize="30sp"
+                android:paddingBottom="20dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/info_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="실종자 정보"
-            android:textSize="30sp" />
+            android:layout_marginTop="3dp"
+            android:layout_marginLeft="3dp"
+            android:background="#ECCCCC"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView7"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/list_img" />
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="실종자 정보"
+                android:paddingBottom="20dp"
+                android:textColor="#070707"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

@@ -13,10 +13,6 @@ class GuardSettingActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        binding.rangeSet.setOnClickListener {
-            startActivity(Intent(this, RangeSetActivity::class.java))
-        }
-
         binding.wardInfo.setOnClickListener {
             startActivity(Intent(this, WardInfoActivity::class.java))
         }

@@ -4,6 +4,7 @@ import android.content.Context
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.http.*
@@ -20,6 +21,8 @@ import javax.net.SocketFactory
 import javax.net.ssl.*
 
 data class ResponseDC(var result: String? = null)
+data class ResponseInfo(var result: Any? = null,
+                        var photo: Any? = null)
 data class ResponseMissing(
                            val id: String? = null,
                            val name: String? = null,
@@ -62,6 +65,9 @@ interface APIInterface{
 
     @GET("/ca/getCert")
     fun getCert(@Query("id")id: String): Call<ResponseDC>
+
+    @GET("/db/getMissingInfo")
+    fun getInfo(): Call<ResponseInfo>
 }
 
 object Singleton{

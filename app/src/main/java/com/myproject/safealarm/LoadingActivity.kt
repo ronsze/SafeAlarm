@@ -1,11 +1,16 @@
 package com.myproject.safealarm
 
 import android.Manifest
+import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.Spinner
 import java.util.Random
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -30,13 +35,16 @@ class LoadingActivity : AppCompatActivity() {
     val context = this
     val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
                                         Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    lateinit var proDialog: ProgressDialog
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
+        ProgressDialog(this)
+        proDialog = ProgressDialog(this)
+        proDialog.myDig()
         App.connectSocket()
-
         checkPermission()
     }
 
@@ -95,10 +103,9 @@ class LoadingActivity : AppCompatActivity() {
 
         Singleton.server.postCSR(App.prefs.id, App.prefs.csr).enqueue(object:Callback<ResponseDC>{
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                Log.e("성공", "성공")
             }
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-                Log.e("실패", "실패")
+                Log.e("CSR등록", "실패")
             }
         })
     }
@@ -160,5 +167,10 @@ class LoadingActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        proDialog.dismiss()
+        super.onDestroy()
     }
 }

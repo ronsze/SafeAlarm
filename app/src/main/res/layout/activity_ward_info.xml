@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     android:orientation="vertical"
     tools:context=".WardInfoActivity">
 
@@ -12,17 +13,23 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="4"
+        android:background="#F4F0F0"
+        android:layout_marginBottom="0.5dp"
         app:srcCompat="@drawable/ic_launcher_foreground" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#000000"
         android:orientation="horizontal">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginVertical="0.5dp"
+            android:layout_marginRight="0.5dp"
             android:layout_weight="1"
+            android:background="#F4F0F0"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -32,6 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10dp"
                 android:text="이름"
+                android:textColor="#000000"
                 android:textSize="20sp" />
 
             <EditText
@@ -40,16 +48,20 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:maxLength = "5"
                 android:gravity="center"
                 android:inputType="textPersonName"
+                android:maxLength="5"
+                android:textColor="#000000"
                 android:textSize="20sp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginVertical="0.5dp"
+            android:layout_marginLeft="0.5dp"
             android:layout_weight="1"
+            android:background="#F4F0F0"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -60,6 +72,7 @@
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="10dp"
                 android:text="성별"
+                android:textColor="#000000"
                 android:textSize="20sp" />
 
             <Spinner
@@ -67,7 +80,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:spinnerMode="dropdown"/>
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 
@@ -76,12 +89,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="0.5dp"
+        android:background="#000000"
         android:orientation="horizontal">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="#F4F0F0"
+            android:layout_marginRight="0.5dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -91,6 +108,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="19dp"
                 android:text="키"
+                android:textColor="#000000"
                 android:textSize="20sp" />
 
             <EditText
@@ -99,9 +117,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:maxLength="3"
                 android:gravity="center"
                 android:inputType="text"
+                android:maxLength="3"
+                android:textColor="#000000"
                 android:textSize="20sp" />
 
         </LinearLayout>
@@ -109,7 +128,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginVertical="0.5dp"
+            android:layout_marginLeft="0.5dp"
             android:layout_weight="1"
+            android:background="#F4F0F0"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -119,6 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10dp"
                 android:text="나이"
+                android:textColor="#000000"
                 android:textSize="20sp" />
 
             <EditText
@@ -127,9 +150,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:maxLength="3"
                 android:gravity="center"
                 android:inputType="text"
+                android:maxLength="3"
+                android:textColor="#000000"
                 android:textSize="20sp" />
         </LinearLayout>
 
@@ -140,6 +164,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center_vertical"
+        android:background="#F4F0F0"
+        android:layout_marginVertical="0.5dp"
         android:orientation="horizontal">
 
         <TextView
@@ -150,6 +176,7 @@
             android:gravity="center"
             android:singleLine="false"
             android:text="보호자\n연락처"
+            android:textColor="#000000"
             android:textSize="20sp" />
 
         <EditText
@@ -158,8 +185,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:maxLength="20"
             android:inputType="number"
+            android:maxLength="20"
+            android:textColor="#000000"
             android:textSize="25sp" />
     </LinearLayout>
 
@@ -167,6 +195,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
+        android:background="#F4F0F0"
+        android:layout_marginVertical="0.5dp"
         android:orientation="vertical">
 
         <TextView
@@ -174,7 +204,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="기타 특징"
+            android:text="신체 특징"
+            android:textColor="#000000"
             android:textSize="20sp" />
 
         <EditText
@@ -183,14 +214,17 @@
             android:layout_height="match_parent"
             android:ems="10"
             android:gravity="top|left"
+            android:inputType="textMultiLine"
+            android:maxLength="100"
             android:singleLine="false"
-            android:maxLength = "100"
-            android:inputType="textMultiLine" />
+            android:textColor="#000000" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#F4F0F0"
+        android:layout_marginTop="0.5dp"
         android:orientation="horizontal">
 
         <Button
@@ -198,7 +232,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="확인"
+            android:foregroundTint="#FFFFFF"
+            android:text="저장"
             android:textSize="20sp" />
 
         <Button

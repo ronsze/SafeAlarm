@@ -143,7 +143,6 @@ class QRCodeActivity : AppCompatActivity() {
         var msg = input.split("SiGn")
         var primeStr = msg[0]
         if(verifSign(input)){
-            Log.e("서명 검증2", "서명 일치")
             var arr = primeStr.split(".")
             this.p = arr[0].toBigInteger()
             this.g = arr[1].toBigInteger()
@@ -155,7 +154,7 @@ class QRCodeActivity : AppCompatActivity() {
             var r1 = g.modPow(x, p)
             mSocket_R.emit("sendR1", r1.toString()+getSign(r1.toString()))
         }else{
-            Log.e("서명 검증2", "서명 불일치")
+            Log.e("서명 sendR1", "서명 불일치")
         }
     }
 
@@ -163,12 +162,11 @@ class QRCodeActivity : AppCompatActivity() {
         val msg = it[0].toString().split("SiGn")
         val r2 = msg[0].toBigInteger()
         if(verifSign(it[0].toString())){
-            Log.e("서명 검증3", "서명 일치")
             var key = r2.modPow(x, p)
             App.prefs.key = key.toString()
             registGuard()
         }else{
-            Log.e("서명 검증3", "서명 불일치")
+            Log.e("서명 receiveR2", "서명 불일치")
         }
     }
 
@@ -185,7 +183,6 @@ class QRCodeActivity : AppCompatActivity() {
     }
 
     fun verifSign(input: String): Boolean{
-        Log.e("받을게", input)
         var arr = input.split("SiGn")
         val cipherText = arr[0]
         val sign = rsaDecrypt(arr[1], getPublicKey())
@@ -199,8 +196,6 @@ class QRCodeActivity : AppCompatActivity() {
             throw DigestException("couldn't make digest of patial content")
         }
         var hSign = Base64Utils.encode(hash)
-        Log.e("싸인1", sign)
-        Log.e("싸인2", hSign)
         return hSign == sign
     }
 
@@ -220,6 +215,7 @@ class QRCodeActivity : AppCompatActivity() {
         var ca = caIn.use{
             cf.generateCertificate(it) as X509Certificate
         }
+        
         var kf = KeyFactory.getInstance("RSA")
         var public = kf.generatePublic(X509EncodedKeySpec(ca.publicKey.encoded))
         App.prefs.publicKey = Base64Utils.encode(public.encoded)

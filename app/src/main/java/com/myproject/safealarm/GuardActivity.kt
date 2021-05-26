@@ -13,19 +13,19 @@ class GuardActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        binding.locationBtn.setOnClickListener {
+        binding.mapLayout.setOnClickListener {
             startActivity(Intent(this, GuardMapActivity::class.java))
         }
 
-        binding.helpBtn.setOnClickListener {
+        binding.helpLayout.setOnClickListener {
             startActivity(Intent(this, GuardHelpActivity::class.java))
         }
 
-        binding.settingBtn.setOnClickListener {
+        binding.setLayout.setOnClickListener {
             startActivity(Intent(this, GuardSettingActivity::class.java))
         }
 
-        binding.infoBtn.setOnClickListener {
+        binding.infoLayout.setOnClickListener {
             startActivity(Intent(this, MissingInfoActivity::class.java))
         }
     }

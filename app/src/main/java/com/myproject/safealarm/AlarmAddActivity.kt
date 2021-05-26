@@ -27,13 +27,6 @@ class AlarmAddActivity : AppCompatActivity() {
 
         spinnerSet()
 
-        binding.add.setOnClickListener {
-            addAlarm(0, App.prefs.a_count)
-            finish()
-        }
-        binding.cancle.setOnClickListener {
-            finish()
-        }
         LocalBroadcastManager.getInstance(this).registerReceiver(reAlarm(), IntentFilter("alarm"))
     }
 
@@ -72,8 +65,6 @@ class AlarmAddActivity : AppCompatActivity() {
         if(add == 0 && cal.timeInMillis <= System.currentTimeMillis()){
             cal.set(Calendar.DAY_OF_MONTH, day+add+1)
         }
-        Log.e("알람1", cal.timeInMillis.toString())
-        Log.e("알람2", System.currentTimeMillis().toString())
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pIntent)
         App.prefs.a_count = 1
         Toast.makeText(this, "등록되었습니다.", Toast.LENGTH_SHORT).show()

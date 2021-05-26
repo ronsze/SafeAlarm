@@ -40,13 +40,13 @@ class RegistActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        binding.GuardBtn.setOnClickListener {
+        binding.guardLayout.setOnClickListener {
             var qrIntent = Intent(this, QRCodeActivity::class.java)
             qrIntent.putExtra("id", App.prefs.id)
             startActivity(qrIntent)
             finish()
         }
-        binding.WardBtn.setOnClickListener {
+        binding.wardLayout.setOnClickListener {
             connectSocket()
             scanQRCode()
         }
@@ -84,12 +84,12 @@ class RegistActivity : AppCompatActivity() {
             IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if(result != null) {
             if (result.contents == null) {
-                Log.e("this", "잘못된 QR코드입니다.")
+                Log.e("QR스캔", "contents 빔.")
                 finish()
             } else {
                 val QRArr = result.contents.split(".")
                 if (QRArr[0] != "Guard") {
-                    Log.e("this", "잘못된 QR코드입니다.2")
+                    Log.e("QR스캔", "잘못된 QR코드.")
                     finish()
                 } else {
                     var code = QRArr[1]
@@ -116,7 +116,6 @@ class RegistActivity : AppCompatActivity() {
                 Toast.makeText(context, "보호자 id가 존재하지 않거나\n이미 등록된 사용자입니다.", Toast.LENGTH_SHORT).show()
             }
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                Log.d("피보호자 등록", "성공")
                 room = code
             }
         })
@@ -154,16 +153,13 @@ class RegistActivity : AppCompatActivity() {
         this.p = arr[0].toBigInteger()
         this.g = arr[1].toBigInteger()
         mSocket_R.emit("sendPrime", App.prefs.id+"9y6s0y9"+primeStr+getSign(primeStr))
-        Log.e("넣을게", primeStr+getSign(primeStr))
     }
-
 
     private val onReceiveR1 = Emitter.Listener {
         try {
             val msg = it[0].toString().split("SiGn")
             val r1 = msg[0].toBigInteger()
             if(verifSign(it[0].toString())){
-                Log.e("서명 검증1", "서명 일치")
                 var y = BigInteger(1024, Random())
                 while(y > p.subtract(1.toBigInteger())){
                     y = BigInteger(1024, Random())
@@ -177,7 +173,7 @@ class RegistActivity : AppCompatActivity() {
                 mSocket_R.emit("sendR2", r2.toString()+getSign(r2.toString()))
                 startForeService()
             }else{
-                Log.e("서명 검증1", "서명 불일치")
+                Log.e("서명 receiveR1", "서명 불일치")
             }
         }catch (e: Exception){
             e.printStackTrace()
@@ -210,8 +206,6 @@ class RegistActivity : AppCompatActivity() {
             throw DigestException("couldn't make digest of patial content")
         }
         var hSign = Base64Utils.encode(hash)
-        Log.e("싸인3", sign)
-        Log.e("싸인4", hSign)
         return hSign == sign
     }
 
