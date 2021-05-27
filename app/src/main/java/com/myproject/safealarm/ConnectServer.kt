@@ -68,6 +68,10 @@ interface APIInterface{
 
     @GET("/db/getMissingInfo")
     fun getInfo(): Call<ResponseInfo>
+
+    @FormUrlEncoded
+    @POST("/db/deleteInfo")
+    fun delInfo(@Field("id")id: String): Call<ResponseInfo>
 }
 
 object Singleton{

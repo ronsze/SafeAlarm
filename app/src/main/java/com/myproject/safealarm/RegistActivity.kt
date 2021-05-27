@@ -33,6 +33,7 @@ class RegistActivity : AppCompatActivity() {
     val mSocket_R = App.mSocket
     private lateinit var p: BigInteger ; private lateinit var g: BigInteger
     private var primeStr = ""
+    private lateinit var proDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +41,10 @@ class RegistActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
+        proDialog = ProgressDialog(this)
+
         binding.guardLayout.setOnClickListener {
+            Log.e("id", App.prefs.id)
             var qrIntent = Intent(this, QRCodeActivity::class.java)
             qrIntent.putExtra("id", App.prefs.id)
             startActivity(qrIntent)
@@ -94,6 +98,7 @@ class RegistActivity : AppCompatActivity() {
                 } else {
                     var code = QRArr[1]
                     this.room = code
+                    proDialog.myDig()
                     try{
                         mSocket_R.emit("enterRoom", code)
                         mSocket_R.emit("getPrime", App.prefs.id)
@@ -263,5 +268,10 @@ class RegistActivity : AppCompatActivity() {
         var kf = KeyFactory.getInstance("RSA")
         var private = kf.generatePrivate(PKCS8EncodedKeySpec(Base64Utils.decode(App.prefs.privateKey)))
         return private
+    }
+
+    override fun onDestroy() {
+        proDialog.dismiss()
+        super.onDestroy()
     }
 }

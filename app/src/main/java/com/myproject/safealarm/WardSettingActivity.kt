@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.WindowManager
 import android.widget.EditText
@@ -17,11 +18,17 @@ class WardSettingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWardSettingBinding
     private val context = this
 
+    companion object {
+        val mSocket = App.mSocket
+        const val NOTIFICATION_ID = 20
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWardSettingBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
 
         binding.certiPass.setOnClickListener {
             if(App.prefs.cert){
@@ -47,7 +54,8 @@ class WardSettingActivity : AppCompatActivity() {
                     DialogInterface.BUTTON_NEGATIVE -> {
                         if (et.text.toString() == App.prefs.pass) {
                             Toast.makeText(context, "인증되었습니다.", Toast.LENGTH_SHORT).show()
-                            App.mSocket.emit("callbackCert")
+                            mSocket.emit("callbackCert")
+                            Log.e("connec", mSocket.connected().toString())
                             App.prefs.cert = false
                         } else {
                             Toast.makeText(context, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
@@ -64,6 +72,7 @@ class WardSettingActivity : AppCompatActivity() {
     fun showSetPassDialog(context: Context){
         val builder = AlertDialog.Builder(this)
         val et = EditText(this)
+        et.inputType = InputType.TYPE_NUMBER_VARIATION_PASSWORD
         builder.setTitle("설정할 패스워드를 입력하세요")
         if(App.prefs.pass != "0000"){
             builder.setMessage("이미 등록된 패스워드가 있습니다.")

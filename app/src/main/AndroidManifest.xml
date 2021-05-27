@@ -23,7 +23,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".EachInfoActivity"></activity>
+        <activity android:name=".MissingMapActivity"></activity>
+        <activity android:name=".EachInfoActivity" />
         <activity android:name=".SetPassActivty" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"

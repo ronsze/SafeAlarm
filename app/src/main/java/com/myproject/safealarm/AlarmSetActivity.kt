@@ -76,23 +76,24 @@ class AlarmSetActivity : AppCompatActivity() {
         intent.putExtra("min", tMin)
         var pIntent = PendingIntent.getBroadcast(this, requestNum, intent, PendingIntent.FLAG_CANCEL_CURRENT)
         var day = Date(System.currentTimeMillis()).date
-        var hour = tHour.toInt()-9
+        var hour = tHour.toInt()
         val minute = tMin.toInt()
-        App.prefs.alarmTime = "${hour+9}시   ${minute}분"
+        App.prefs.alarmTime = "${hour}시   ${minute}분"
 
-        if(hour < 0){
-            day -= 1
-            hour += 24
-        }
         val cal = Calendar.getInstance()
         cal.set(Calendar.DAY_OF_MONTH, day+add)
         cal.set(Calendar.HOUR_OF_DAY, hour)
         cal.set(Calendar.MINUTE, minute)
         cal.set(Calendar.SECOND, 0)
 
-        if(add == 0 && cal.timeInMillis <= System.currentTimeMillis()){
-            cal.set(Calendar.DAY_OF_MONTH, day+add+1)
+        if(hour-9 < 0){
+            day -= 1
+            hour += 24
+            cal.set(Calendar.DAY_OF_MONTH, day+add)
+            cal.set(Calendar.HOUR_OF_DAY, hour)
         }
+
+        Log.e("씨발", "${day} ${day+add}, ${hour}, ${minute}")
         Log.e("알람1", cal.timeInMillis.toString())
         Log.e("알람2", System.currentTimeMillis().toString())
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pIntent)

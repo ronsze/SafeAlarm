@@ -34,12 +34,15 @@ class QRCodeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQRCodeBinding
     val mSocket_R = App.mSocket
     private lateinit var p: BigInteger ; private lateinit var g: BigInteger ; private lateinit var x: BigInteger
+    private lateinit var proDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQRCodeBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        proDialog = ProgressDialog(this)
 
         connectSocket()
         createQRCode()
@@ -254,5 +257,9 @@ class QRCodeActivity : AppCompatActivity() {
         var kf = KeyFactory.getInstance("RSA")
         var private = kf.generatePrivate(PKCS8EncodedKeySpec(Base64Utils.decode(App.prefs.privateKey)))
         return private
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 }

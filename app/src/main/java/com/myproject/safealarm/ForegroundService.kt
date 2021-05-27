@@ -1,8 +1,6 @@
 package com.myproject.safealarm
 
 import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -31,10 +29,8 @@ import java.lang.RuntimeException
 import java.security.*
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
-import java.time.Duration
 import java.util.*
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.*
@@ -58,6 +54,7 @@ class ForegroundService : Service() {
     private var first = false
 
     private var entireData: MutableList<MutableList<Int>> = mutableListOf(
+        mutableListOf(56,57,58,68,67,66,56),
         mutableListOf(56,57,58,59,60,50,49,48,47,46,56),
         mutableListOf(56,57,67,68,69,59,58,48,47,46,56),
         mutableListOf(56,57,67,77,78,79,69,59,58,57,56),
@@ -199,6 +196,7 @@ class ForegroundService : Service() {
             mSocket.on("HelpCall_W", onHelpCall_W)
             mSocket.on("sendCert", onSendCert)
             mSocket.on("callbackCert", onCallbackCert)
+            mSocket.on("newMissing", onNewMissing)
             if (role == "Guard") {
                 sendLocReq()
             }
@@ -223,6 +221,7 @@ class ForegroundService : Service() {
                 if(verifSign(it[0].toString())){
                     getLatLng()
                 }else{
+                    Log.e("서명검증 위치 요청 받음", "실패")
                 }
             }catch (e:Exception){
                 e.printStackTrace()
@@ -241,18 +240,27 @@ class ForegroundService : Service() {
         if(role == "Ward"){
             createNotification("보호자로부터 인증 요청이 도착했습니다.\n3분 안에 인증을 완료해주세요.")
             App.prefs.cert = true
-            var timer = TimerThread_W()
-            timer.run()
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(3*60*1000)
+                if(App.prefs.cert){
+                    createNotification("인증을 수행하지 않았습니다.")
+                }
+                App.prefs.cert = false
+            }
         }
     }
 
     private val onCallbackCert = Emitter.Listener {            //인증 메세지 완료
         if(role == "Guard"){
             if(isSendCert){
+                Log.e("인증 수행 완료", "완료")
                 createNotification("피보호자가 인증을 완료했습니다.")
                 isCert = true
             }
+        }else if(role == "Ward"){
+            createNotification("인증을 수행했습니다.")
         }
+
     }
 
     private val onCallbackLoc = Emitter.Listener {              //좌표 받음
@@ -265,13 +273,11 @@ class ForegroundService : Service() {
                 if(verifSign(deLat) && verifSign(deLng)){
                     val latitude = deLat.split("SiGn")[0].toDouble()
                     val longitude = deLng.split("SiGn")[0].toDouble()
-                    Log.e("위도", latitude.toString())
-                    Log.e("경도", longitude.toString())
                     if (latitude == 0.0 && longitude == 0.0) {
                         locationCount += 1
                     } else {
                         locationCount = 0
-                        cngMapLocation(latitude, longitude)
+                        `cngMapLocation`(latitude, longitude)
                         first = true
                         var cell = getCell(latitude, longitude)
                         if (first) {
@@ -287,6 +293,10 @@ class ForegroundService : Service() {
                 e.printStackTrace()
             }
         }
+    }
+
+    private val onNewMissing = Emitter.Listener {
+        createNotification("새로운 실종정보가 등록되었습니다.")
     }
 
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ위치 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -353,9 +363,9 @@ class ForegroundService : Service() {
         try {
             var enLat = encrypt(lat.toString(), key)
             var enLng = encrypt(lng.toString(), key)
+            json.put("provider", provider_str)
             json.put("latitude", enLat)
             json.put("longitude", enLng)
-            json.put("fixed", fix)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -417,12 +427,13 @@ class ForegroundService : Service() {
     }
 
     private fun sendLocReq() {                                              //위치 요청
+
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
                 delay(5000)
-                if (locationCount >= 5) {
+                if (locationCount >= 12) {
                     //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
-                    Log.e("위치 요청", "응답 없음 5회")
+                    Log.e("위치 요청", "응답 없음 1분")
                     createNotification("피보호자의 위치를 받아오지 못했습니다.")
                     locationCount = 0
                 }else{
@@ -445,6 +456,7 @@ class ForegroundService : Service() {
                 drawPath(-1, -1)
                 App.prefs.isPred = false
             }else if(next_cell == -1) {
+                createNotification("예측이 종료되었습니다.")
                 drawPath(-1, -1)
                 App.prefs.isPred = false
             }
@@ -496,7 +508,7 @@ class ForegroundService : Service() {
     }
 
     private fun getCell(lat: Double, lng: Double): Int{
-        var lat_cell = 37.58910900845096 ; var lng_cell = 127.0508933021918
+        var lat_cell = 37.58910900845096 ; var lng_cell = 127.049195384405
         val lat_add = 0.0027030070953936 ; val lng_add = 0.0033958355736415
         var lat_num = 0 ; var lng_num = 1
         var cell_num = 0
@@ -509,7 +521,7 @@ class ForegroundService : Service() {
                 lat_cell -= lat_add
             }
         }
-        while(lng_cell < 127.0848516579282){
+        while(lng_cell < 127.0831537401414){
             if(lng in lng_cell..lng_cell+lng_add){
                 break
             }else{
@@ -544,12 +556,9 @@ class ForegroundService : Service() {
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ암호화 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     fun encrypt(input: String, key: ByteArray): String {
-        var arr = ByteArray(16)
-        var str = ""
-        while(str.length != 16){
-            SecureRandom().nextBytes(arr)
-            str = String(arr)
-        }
+        var arr = ByteArray(320)
+        SecureRandom().nextBytes(arr)
+        var str = Base64Utils.encode(arr).substring(0, 16)
         var plainText = input.plus(getSign(input))
         val iv = getIv(str)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -685,33 +694,22 @@ class ForegroundService : Service() {
 
     inner class timerReceiver: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
-            if(intent != null) {
-                isSendCert = true
-                var timer = TimerThread_G(true)
-                timer.run()
+            CoroutineScope(Dispatchers.Main).launch {
+                try{
+                    if(intent != null) {
+                        isSendCert = true
+                        delay(3*60*1000)
+                        if(isCert){
+                            isCert = false
+                        }else{
+                            createNotification("피보호자가 인증을 수행하지 않았습니다.")
+                        }
+                        isSendCert = false
+                    }
+                }catch (e: Exception){
+                    e.printStackTrace()
+                }
             }
-        }
-    }
-
-    inner class TimerThread_G(var isSendCert: Boolean): Thread(){
-        override fun run(){
-            sleep(5000)
-            if(isCert){
-                isCert = false
-            }else{
-                createNotification("피보호자가 인증을 수행하지 않았습니다.")
-            }
-            isSendCert = false
-        }
-    }
-
-    inner class TimerThread_W: Thread(){
-        override fun run(){
-            sleep(5000)
-            if(App.prefs.cert){
-                createNotification("인증을 수행하지 않았습니다.")
-            }
-            App.prefs.cert = false
         }
     }
 }
@@ -728,8 +726,10 @@ class alarmManagerReceiver: BroadcastReceiver(){
             rIntent.putExtra("hour", hour)
             rIntent.putExtra("min", min)
             App.mSocket.emit("sendCert")
-            LocalBroadcastManager.getInstance(context!!).sendBroadcast(rIntent)
-            LocalBroadcastManager.getInstance(context!!).sendBroadcast(tIntent)
+            if(context != null){
+                LocalBroadcastManager.getInstance(context).sendBroadcast(rIntent)
+                LocalBroadcastManager.getInstance(context).sendBroadcast(tIntent)
+            }
         }
     }
 }

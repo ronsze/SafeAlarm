@@ -14,8 +14,7 @@ object NotificationFile{
     fun createNotification(context: Context, msg: String): Notification{
         val notificationIntent = Intent(context, LoadingActivity::class.java)
         notificationIntent.action = Actions.MAIN
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
         val pendingIntent = PendingIntent
             .getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -23,8 +22,9 @@ object NotificationFile{
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("SafeMe")
             .setContentText(msg)
+            .setContentIntent(pendingIntent)
+            .setOngoing(false)
             .setSmallIcon(R.drawable.ic_launcher_background)
-            .setOngoing(true)
             .build()
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){

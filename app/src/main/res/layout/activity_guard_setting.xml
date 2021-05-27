@@ -55,5 +55,16 @@
             android:text="피보호자 정보 등록"
             android:textColor="#FFFFFF"
             android:textSize="25dp" />
+
+        <TextView
+            android:id="@+id/del_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="0.5dp"
+            android:background="#232323"
+            android:padding="10dp"
+            android:text="피보호자 정보 삭제"
+            android:textColor="#FFFFFF"
+            android:textSize="25dp" />
     </LinearLayout>
 </LinearLayout>

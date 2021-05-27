@@ -106,6 +106,8 @@ class GuardHelpActivity : AppCompatActivity() {
                 Singleton.server.postPhoto(body).enqueue(object : Callback<ResponseDC> {
                     override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
                         Toast.makeText(context, "등록되었습니다.", Toast.LENGTH_SHORT).show()
+                        App.mSocket.emit("postMissing")
+                        App.prefs.infoRegist = true
                         finish()
                     }
 

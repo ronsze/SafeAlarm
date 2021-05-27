@@ -1,5 +1,6 @@
 package com.myproject.safealarm
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +10,11 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.common.util.Base64Utils
 import com.myproject.safealarm.databinding.ActivityEachInfoBinding
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraPosition
+import com.naver.maps.map.NaverMap
+import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.map.overlay.OverlayImage
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Exception
@@ -16,6 +22,7 @@ import java.lang.RuntimeException
 
 class EachInfoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEachInfoBinding
+    private var context = this
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +31,13 @@ class EachInfoActivity : AppCompatActivity() {
         setContentView(view)
 
         setView()
+
+        binding.locText.setOnClickListener {
+            var mIntent = Intent(context, MissingMapActivity::class.java)
+            val loc = intent.getStringExtra("loc")
+            mIntent.putExtra("loc", loc)
+            startActivity(mIntent)
+        }
 
         binding.extra2Text.setOnClickListener {
             extraDialog(intent.getStringExtra("extra2")!!)
@@ -41,9 +55,9 @@ class EachInfoActivity : AppCompatActivity() {
             var looks = intent.getStringExtra("looks")
             var time = intent.getStringExtra("time")
             var loc = intent.getStringExtra("loc")
-            var extra1 = intent.getStringExtra("extra1")
+            var extra1 = intent.getStringExtra("extra")
             binding.photo.setImageBitmap(loadCacheImg())
-            binding.nameText.text = "이름 : ${name} (${age}세, ${sex}, 신장${height}cm"
+            binding.nameText.text = "이름 : ${name} (${age}세, ${sex}, 신장${height}cm)"
             binding.phoneText.text = "연락처 : ${number}"
             binding.looksText.text = "인상착의 : ${looks}"
             binding.timeText.text = "실종일자 : ${time}"
@@ -72,15 +86,5 @@ class EachInfoActivity : AppCompatActivity() {
         builder.setMessage(extra)
         builder.setNegativeButton("확인", null)
         builder.show()
-    }
-
-    fun getBitmap(input: String): Bitmap {
-        try {
-            var arr = Base64Utils.decode(input)
-            var bitmap = BitmapFactory.decodeByteArray(arr, 0, arr.size)
-            return bitmap
-        } catch (e: Exception) {
-            throw RuntimeException(e)
-        }
     }
 }
