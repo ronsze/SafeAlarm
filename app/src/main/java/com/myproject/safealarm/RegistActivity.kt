@@ -15,25 +15,22 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.*
-import java.lang.RuntimeException
 import java.math.BigInteger
 import java.security.*
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
-import javax.crypto.Cipher
 
 class RegistActivity : AppCompatActivity() {
     private val context = this
+    private val mSocketR = App.mSocket
+
     private lateinit var binding: ActivityRegistBinding
     private lateinit var socketT: socketThread
-    private lateinit var room: String
-    val mSocket_R = App.mSocket
+    private lateinit var remoteID: String
     private lateinit var p: BigInteger ; private lateinit var g: BigInteger
-    private var primeStr = ""
-    private lateinit var proDialog: ProgressDialog
+    private lateinit var loadingDlog: LoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,11 +38,10 @@ class RegistActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        proDialog = ProgressDialog(this)
+        loadingDlog = LoadingDialog(this)
 
         binding.guardLayout.setOnClickListener {
-            Log.e("id", App.prefs.id)
-            var qrIntent = Intent(this, QRCodeActivity::class.java)
+            val qrIntent = Intent(this, QRCodeActivity::class.java)
             qrIntent.putExtra("id", App.prefs.id)
             startActivity(qrIntent)
             finish()
@@ -64,18 +60,18 @@ class RegistActivity : AppCompatActivity() {
     inner class socketThread : Thread() {
         override fun run() {
             try {
-                if(!mSocket_R.connected()){
-                    mSocket_R.connect()
+                if(!mSocketR.connected()){
+                    mSocketR.connect()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            mSocket_R.on("receiveR1", onReceiveR1)
-            mSocket_R.on("callbackPrime", onCallbackPrime)
+            mSocketR.on("receiveR1", onReceiveR1)
+            mSocketR.on("callbackPrime", onCallbackPrime)
         }
     }
 
-    fun scanQRCode(){
+    private fun scanQRCode(){
         val integrator = IntentIntegrator(this)
         integrator.setBeepEnabled(false)
         integrator.setOrientationLocked(true)
@@ -96,16 +92,9 @@ class RegistActivity : AppCompatActivity() {
                     Log.e("QR스캔", "잘못된 QR코드.")
                     finish()
                 } else {
-                    var code = QRArr[1]
-                    this.room = code
-                    proDialog.myDig()
-                    try{
-                        mSocket_R.emit("enterRoom", code)
-                        mSocket_R.emit("getPrime", App.prefs.id)
-                    }catch (e:Exception){
-                        e.printStackTrace()
-                    }
-                    registWard(code)
+                    val remoteID = QRArr[1]
+                    this.remoteID = remoteID
+                    startDHExchange(remoteID)
                 }
             }
         }
@@ -114,35 +103,23 @@ class RegistActivity : AppCompatActivity() {
         }
     }
 
-    fun registWard(code: String){                  //피보호자 등록
-        Singleton.server.registWard(App.prefs.id, code).enqueue(object:Callback<ResponseDC>{
-            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-                Log.d("피보호자 등록", "실패")
-                Toast.makeText(context, "보호자 id가 존재하지 않거나\n이미 등록된 사용자입니다.", Toast.LENGTH_SHORT).show()
-            }
-            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                room = code
-            }
-        })
-    }
-
-    fun startForeService(){                 //Foregroud서비스 시작
-        val foreIntent = Intent(this, ForegroundService::class.java)
-        foreIntent.action = Actions.START_FOREGROUND
-        startService(foreIntent)
-        moveActivity()
-    }
-
-    fun moveActivity(){                     //액티비티 이동
-        startActivity(Intent(this, LoadingActivity::class.java))
-        finish()
+    private fun startDHExchange(remoteID: String){
+        loadingDlog.show()
+        try{
+            mSocketR.emit("enterRoom", remoteID)
+            mSocketR.emit("getPrime", App.prefs.id)    //onCallbackPrime
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
     }
 
     private val onCallbackPrime = Emitter.Listener {
-        Singleton.server.getCert(room).enqueue(object:Callback<ResponseDC>{
+        Singleton.server.getCert(remoteID).enqueue(object:Callback<ResponseDC>{
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                getCertificate(response.body()!!.result!!)
-                sendPrime(it[0].toString())
+                val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                saveCertificate(response.body()!!.result!!, path) //result = X509certificate
+                val primeNumber = it[0].toString()
+                sendPrime(primeNumber)
             }
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.e("인증서", "실패")
@@ -150,33 +127,23 @@ class RegistActivity : AppCompatActivity() {
         })
     }
 
-    private fun sendPrime(input: String){
-        var primeStr = input
-        primeStr = primeStr.substring(2, primeStr.length - 2)
-        val arr = primeStr.split(".")
-        this.primeStr = primeStr
+    private fun sendPrime(primeNumber: String){
+        val primeNum = primeNumber.substring(2, primeNumber.length - 2)
+        val arr = primeNum.split(".")
         this.p = arr[0].toBigInteger()
         this.g = arr[1].toBigInteger()
-        mSocket_R.emit("sendPrime", App.prefs.id+"9y6s0y9"+primeStr+getSign(primeStr))
+        mSocketR.emit("sendPrime", App.prefs.id+"9y6s0y9"+primeNum+getSign(primeNum))
     }
 
     private val onReceiveR1 = Emitter.Listener {
         try {
-            val msg = it[0].toString().split("SiGn")
-            val r1 = msg[0].toBigInteger()
-            if(verifSign(it[0].toString())){
-                var y = BigInteger(1024, Random())
-                while(y > p.subtract(1.toBigInteger())){
-                    y = BigInteger(1024, Random())
-                }
-                val r2 = g.modPow(y, p)
-                val key = r1.modPow(y, p)
-                App.prefs.key = key.toString()
-                App.prefs.regKey = true
-                App.prefs.role = "Ward"
-                App.prefs.room = room
-                mSocket_R.emit("sendR2", r2.toString()+getSign(r2.toString()))
-                startForeService()
+            val msg = it[0].toString()
+            val r1 = msg.split("SiGn")[0].toBigInteger()
+            if(checkSign(msg)){
+                val y = getY()
+                saveShardKey(r1, y)
+                sendR2(y)
+                registWard()
             }else{
                 Log.e("서명 receiveR1", "서명 불일치")
             }
@@ -185,93 +152,54 @@ class RegistActivity : AppCompatActivity() {
         }
     }
 
-    fun getSign(input: String): String{
-        val hash: ByteArray
-        try{
-            val md = MessageDigest.getInstance("SHA-256")
-            md.update(input.toByteArray())
-            hash = md.digest()
-        }catch (e: CloneNotSupportedException){
-            throw DigestException("couldn't make digest of patial content")
+    private fun getY(): BigInteger{
+        var y = BigInteger(1024, Random())
+        while(y > p.subtract(1.toBigInteger())){
+            y = BigInteger(1024, Random())
         }
-        return "SiGn"+ rsaEncrypt(Base64Utils.encode(hash), getPrivateKey())
+        return y
     }
 
-    fun verifSign(input: String): Boolean{
-        var arr = input.split("SiGn")
-        val cipherText = arr[0]
-        val sign = rsaDecrypt(arr[1], getPublicKey())
-
-        val hash: ByteArray
-        try{
-            val md = MessageDigest.getInstance("SHA-256")
-            md.update(cipherText.toByteArray())
-            hash = md.digest()
-        }catch (e: CloneNotSupportedException){
-            throw DigestException("couldn't make digest of patial content")
-        }
-        var hSign = Base64Utils.encode(hash)
-        return hSign == sign
+    private fun saveShardKey(r1: BigInteger, y: BigInteger){
+        val shardKey = r1.modPow(y, p)
+        App.prefs.shardKey = shardKey.toString()
     }
 
-    fun getCertificate(response: String){
-        var tempFile = File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "certificate.crt")
-        try{
-            val writer = FileWriter(tempFile)
-            val buffer = BufferedWriter(writer)
-            buffer.write(response)
-            buffer.close()
-        }catch(e: java.lang.Exception){
-            e.printStackTrace()
-        }
-
-        var cf = CertificateFactory.getInstance("X.509")
-        var caIn = BufferedInputStream(FileInputStream(tempFile))
-        var ca = caIn.use{
-            cf.generateCertificate(it) as X509Certificate
-        }
-        var kf = KeyFactory.getInstance("RSA")
-        var public = kf.generatePublic(X509EncodedKeySpec(ca.publicKey.encoded))
-        App.prefs.publicKey = Base64Utils.encode(public.encoded)
+    private fun sendR2(y: BigInteger){
+        val r2 = g.modPow(y, p)
+        mSocketR.emit("sendR2", r2.toString()+getSign(r2.toString()))
     }
 
-    fun rsaEncrypt(input: String, key: PrivateKey): String{
-        try {
-            val cipher = Cipher.getInstance("RSA")
-            cipher.init(Cipher.ENCRYPT_MODE, key)
-            val encrypt = cipher.doFinal(input.toByteArray())
-            return Base64Utils.encode(encrypt)
-        }catch (e: Exception){
-            throw RuntimeException(e)
-        }
+    private fun registWard(){                  //피보호자 등록
+        val remoteID = this.remoteID
+        Singleton.server.registWard(App.prefs.id, remoteID).enqueue(object:Callback<ResponseDC>{
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                App.prefs.regKey = true
+                App.prefs.role = "Ward"
+                App.prefs.room = remoteID
+                startForeService()
+            }
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                Log.d("피보호자 등록", "실패")
+                Toast.makeText(context, "보호자 id가 존재하지 않거나\n이미 등록된 사용자입니다.", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
-    fun rsaDecrypt(input: String, key: PublicKey): String{
-        try {
-            var byteEncrypt: ByteArray = Base64Utils.decode(input)
-            val cipher = Cipher.getInstance("RSA")
-            cipher.init(Cipher.DECRYPT_MODE, key)
-            val decrypt = cipher.doFinal(byteEncrypt)
-            return String(decrypt)
-        }catch (e: Exception){
-            throw RuntimeException(e)
-        }
+    fun startForeService(){                 //Foregroud서비스 시작
+        val foreIntent = Intent(this, ForegroundService::class.java)
+        foreIntent.action = Actions.START_FOREGROUND
+        startService(foreIntent)
+        moveLoadingActivity()
     }
 
-    fun getPublicKey(): PublicKey{
-        var kf = KeyFactory.getInstance("RSA")
-        var public = kf.generatePublic(X509EncodedKeySpec(Base64Utils.decode(App.prefs.publicKey)))
-        return public
-    }
-
-    fun getPrivateKey(): PrivateKey{
-        var kf = KeyFactory.getInstance("RSA")
-        var private = kf.generatePrivate(PKCS8EncodedKeySpec(Base64Utils.decode(App.prefs.privateKey)))
-        return private
+    fun moveLoadingActivity(){                     //액티비티 이동
+        startActivity(Intent(this, LoadingActivity::class.java))
+        finish()
     }
 
     override fun onDestroy() {
-        proDialog.dismiss()
+        loadingDlog.dismiss()
         super.onDestroy()
     }
 }

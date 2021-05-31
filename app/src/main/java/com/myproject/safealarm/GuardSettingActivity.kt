@@ -4,8 +4,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.myproject.safealarm.databinding.ActivityGuardSettingBinding
@@ -14,8 +12,10 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class GuardSettingActivity : AppCompatActivity() {
+    private val context = this
+
     lateinit var binding: ActivityGuardSettingBinding
-    private var context = this
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityGuardSettingBinding.inflate(layoutInflater)
@@ -31,19 +31,22 @@ class GuardSettingActivity : AppCompatActivity() {
         }
 
         binding.delInfo.setOnClickListener {
-            Log.e("Aaaa", App.prefs.infoRegist.toString())
-            if(App.prefs.infoRegist){
-                delDialog()
-            }else{
-                Toast.makeText(context, "게시된 정보가 없습니다.", Toast.LENGTH_SHORT).show()
-            }
+            checkInfoRegist()
+        }
+    }
+
+    private fun checkInfoRegist(){
+        if(App.prefs.infoRegist){
+            delDialog()
+        }else{
+            Toast.makeText(context, "게시된 정보가 없습니다.", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun delDialog(){
         val builder = AlertDialog.Builder(this)
         builder.setMessage("게시된 실종정보를\n삭제하시겠습니까?")
-        var dialog_listener = object : DialogInterface.OnClickListener {
+        var dialogListener = object : DialogInterface.OnClickListener {
             override fun onClick(dialog: DialogInterface?, which: Int) {
                 when (which) {
                     DialogInterface.BUTTON_NEGATIVE -> {
@@ -52,7 +55,7 @@ class GuardSettingActivity : AppCompatActivity() {
                 }
             }
         }
-        builder.setNegativeButton("확인", dialog_listener)
+        builder.setNegativeButton("확인", dialogListener)
         builder.setPositiveButton("취소", null)
         builder.show()
     }

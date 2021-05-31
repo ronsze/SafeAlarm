@@ -29,60 +29,122 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
 import org.bouncycastle.util.io.pem.PemObject
 import java.io.StringWriter
+import java.security.KeyPair
 import kotlin.math.sign
 
 class LoadingActivity : AppCompatActivity() {
-    val context = this
-    val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-                                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    lateinit var proDialog: ProgressDialog
-
+    private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private lateinit var loadingDlog: LoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
-        ProgressDialog(this)
-        proDialog = ProgressDialog(this)
-        proDialog.myDig()
+
+        loadingDlog = LoadingDialog(this)
+        loadingDlog.show()
         App.connectSocket()
         checkPermission()
     }
 
-    private fun readPref(){
+    private fun checkPermission(){          //권한 체크
+        val hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_FINE_LOCATION)
+        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_COARSE_LOCATION)
+        val hasStorageReadPermission = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.READ_EXTERNAL_STORAGE)
+        val hasStorageWritePermission = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
+            hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED &&
+            hasStorageReadPermission == PackageManager.PERMISSION_GRANTED &&
+            hasStorageWritePermission == PackageManager.PERMISSION_GRANTED){
+            chooseMode()
+        }else{
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])){
+                Toast.makeText(this, "앱을 실행하려면 위치 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
+            }else{
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if(requestCode == MyAddress.PERMISSIONS_REQUEST_CODE && grantResults.size == REQUIRED_PERMISSIONS.size){
+            var checkResult = true
+            for(result in grantResults){
+                if(result != PackageManager.PERMISSION_GRANTED){
+                    checkResult = false;
+                    break;
+                }
+            }
+            if(checkResult){
+                chooseMode()
+            }else{
+                if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
+                    || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])
+                    || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[2])
+                    || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[3])){
+                    Toast.makeText(this, "권한 설정이 거부되었습니다.\n앱을 사용하시려면 다시 실행해주세요.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }else{
+                    Toast.makeText(this, "권한 설정이 거부되었습니다.\n설정에서 권한을 허용해야 합니다..", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun chooseMode(){
         val isReg = App.prefs.regKey
         if(App.prefs.idOn){
             if(isReg){
                 moveActivity()
             }else{
-                createId()
+                registId()
             }
         }else{
-            createId()
+            registId()
         }
     }
 
-    private fun createId(){                 //ID 생성
-        var rNum = Random().nextInt(100000) + 1
-        Singleton.server.fConnect(rNum.toString()).enqueue(object:Callback<ResponseDC>{
-            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-                createId()
-            }
+    private fun registId(){                 //ID 생성
+        val rID = createRandomID()
+        Singleton.server.fConnect(rID).enqueue(object:Callback<ResponseDC>{
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
                 App.prefs.idOn = true
-                App.prefs.id = rNum.toString()
-                createX509()
-                startActivity(Intent(context, RegistActivity::class.java))
-                finish()
+                App.prefs.id = rID
+                registCertificate()
+            }
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                registId()
             }
         })
     }
 
-    private fun createX509(){
-        val keygen = KeyPairGenerator.getInstance("RSA")
-        keygen.initialize(2048, SecureRandom())
-        val keyPair = keygen.genKeyPair()
+    private fun createRandomID(): String{
+        var rNum = Random().nextInt(100000) + 1
+        return rNum.toString()
+    }
 
-        App.prefs.privateKey = Base64Utils.encode(keyPair.private.encoded)
+
+    private fun registCertificate(){
+        val csr = createX509CSR()
+        Singleton.server.postCSR(App.prefs.id, csr).enqueue(object:Callback<ResponseDC>{
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                chooseMode()
+                App.prefs.csr = csr
+            }
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                Log.e("CSR등록", "실패")
+            }
+        })
+    }
+
+    private fun createX509CSR(): String{
+        val keyPair = getRSAKeyPair()
 
         val sigAlg = "SHA256withRSA"
         val params = "C=kr,O=SuwonUniv,CN=${App.prefs.id}"
@@ -99,15 +161,16 @@ class LoadingActivity : AppCompatActivity() {
         jcaPEMWriter.writeObject(pemObject)
         jcaPEMWriter.close()
         csr.close()
-        App.prefs.csr = csr.toString()
+        return csr.toString()
+    }
 
-        Singleton.server.postCSR(App.prefs.id, App.prefs.csr).enqueue(object:Callback<ResponseDC>{
-            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-            }
-            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-                Log.e("CSR등록", "실패")
-            }
-        })
+    private fun getRSAKeyPair(): KeyPair{
+        val keygen = KeyPairGenerator.getInstance("RSA")
+        keygen.initialize(2048, SecureRandom())
+        val keyPair = keygen.genKeyPair()
+        App.prefs.privateKey = Base64Utils.encode(keyPair.private.encoded)
+
+        return keyPair
     }
 
     private fun moveActivity(){             //액티비티 이동
@@ -119,58 +182,8 @@ class LoadingActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun checkPermission(){          //권한 체크
-        val hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-        val hasStorageReadPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-        val hasStorageWritePermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-        if(hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasStorageReadPermission == PackageManager.PERMISSION_GRANTED &&
-                hasStorageWritePermission == PackageManager.PERMISSION_GRANTED){
-            readPref()
-        }else{
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])){
-                Toast.makeText(this, "앱을 실행하려면 위치 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
-            }else{
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if(requestCode == MyAddress.PERMISSIONS_REQUEST_CODE && grantResults.size == REQUIRED_PERMISSIONS.size){
-            var check_result = true
-            for(result in grantResults){
-                if(result != PackageManager.PERMISSION_GRANTED){
-                    check_result = false;
-                    break;
-                }
-            }
-            if(check_result){
-                readPref()
-            }else{
-                if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
-                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])
-                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[2])
-                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[3])){
-                    Toast.makeText(this, "권한 설정이 거부되었습니다.\n앱을 사용하시려면 다시 실행해주세요.", Toast.LENGTH_SHORT).show()
-                    finish()
-                }else{
-                    Toast.makeText(this, "권한 설정이 거부되었습니다.\n설정에서 권한을 허용해야 합니다..", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
     override fun onDestroy() {
-        proDialog.dismiss()
+        loadingDlog.dismiss()
         super.onDestroy()
     }
 }

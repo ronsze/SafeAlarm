@@ -17,6 +17,7 @@ import java.lang.Exception
 
 class WardInfoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWardInfoBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWardInfoBinding.inflate(layoutInflater)
@@ -24,12 +25,14 @@ class WardInfoActivity : AppCompatActivity() {
         setContentView(view)
 
         spinnerSet()
-        if(App.prefs.onWardInfo){
-            loadInfo()
-        }
+        loadInfo()
 
         binding.save.setOnClickListener {
-            saveInfo()
+            if(checkCanSave()){
+                Toast.makeText(this, "기타 특징 외의 모든 정보를\n입력하셔야 저장이 가능합니다.", Toast.LENGTH_SHORT).show()
+            }else{
+                saveInfo()
+            }
         }
         binding.cancle.setOnClickListener {
             finish()
@@ -39,6 +42,35 @@ class WardInfoActivity : AppCompatActivity() {
             intent.setType("image/*")
             intent.setAction(Intent.ACTION_GET_CONTENT)
             startActivityForResult(intent, 101)
+        }
+    }
+
+    private fun spinnerSet(){
+        val sAdapter = ArrayAdapter.createFromResource(this, R.array.sex, R.layout.spinner_font_range)
+        sAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.sexSpin.adapter = sAdapter
+        if(App.prefs.sex == "남"){
+            binding.sexSpin.setSelection(0)
+        }else{
+            binding.sexSpin.setSelection(1)
+        }
+    }
+
+    private fun loadInfo(){
+        if(App.prefs.onWardInfo){
+            try{
+                var imgPath = "${getExternalFilesDir(Environment.DIRECTORY_PICTURES)}/${App.prefs.id}.png"
+                var bm = BitmapFactory.decodeFile(imgPath)
+                binding.imageView.setImageBitmap(bm)
+            }catch(e: Exception){
+                e.printStackTrace()
+            }
+
+            binding.nameEdit.setText(App.prefs.name)
+            binding.heightEdit.setText(App.prefs.height)
+            binding.ageEdit.setText(App.prefs.age)
+            binding.phoneEdit.setText(App.prefs.number)
+            binding.extraEdit.setText(App.prefs.extra)
         }
     }
 
@@ -54,7 +86,7 @@ class WardInfoActivity : AppCompatActivity() {
                         var imgBitmap = BitmapFactory.decodeStream(instream)
                         binding.imageView.setImageBitmap(imgBitmap)
                         instream!!.close()
-                        saveBitmapToJpeg(imgBitmap)
+                        saveBitmapToPng(imgBitmap)
                     }catch(e: Exception){
                         e.printStackTrace()
                     }
@@ -63,7 +95,7 @@ class WardInfoActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveBitmapToJpeg(bitmap: Bitmap){
+    private fun saveBitmapToPng(bitmap: Bitmap){
         var tempFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${App.prefs.id}.png")
         try{
             tempFile.createNewFile()
@@ -75,57 +107,26 @@ class WardInfoActivity : AppCompatActivity() {
         }
     }
 
-    private fun spinnerSet(){
-        val sAdapter = ArrayAdapter.createFromResource(this, R.array.sex, R.layout.spinner_font_range)
-        sAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.sexSpin.adapter = sAdapter
-        if(App.prefs.sex == "남"){
-            binding.sexSpin.setSelection(0)
-        }else{
-            binding.sexSpin.setSelection(1)
-        }
-
-    }
-
-    private fun loadInfo(){
-        try{
-            var imgPath = "${getExternalFilesDir(Environment.DIRECTORY_PICTURES)}/${App.prefs.id}.png"
-            var bm = BitmapFactory.decodeFile(imgPath)
-            binding.imageView.setImageBitmap(bm)
-        }catch(e: Exception){
-            e.printStackTrace()
-        }
-
-        binding.nameEdit.setText(App.prefs.name)
-        binding.heightEdit.setText(App.prefs.height)
-        binding.ageEdit.setText(App.prefs.age)
-        binding.phoneEdit.setText(App.prefs.number)
-        binding.extraEdit.setText(App.prefs.extra)
-    }
-
     private fun saveInfo(){
+        Toast.makeText(this, "저장되었습니다.", Toast.LENGTH_SHORT).show()
+        App.prefs.onWardInfo = true
+        App.prefs.name = binding.nameEdit.text.toString()
+        App.prefs.height = binding.heightEdit.text.toString()
+        App.prefs.age = binding.ageEdit.text.toString()
+        App.prefs.number = binding.phoneEdit.text.toString()
+        if(binding.sexSpin.selectedItemPosition == 0){
+            App.prefs.sex = "남"
+        }else{
+            App.prefs.sex = "여"
+        }
+        App.prefs.extra = binding.extraEdit.text.toString()
+        finish()
+    }
+
+    private fun checkCanSave(): Boolean{
         val image = binding.imageView.drawable.toBitmap()
         val default = getDrawable(R.drawable.loading_img)!!.toBitmap()
-        if(binding.nameEdit.text.toString() == ""
-            || binding.heightEdit.text.toString() == ""
-            || binding.ageEdit.text.toString() == ""
-            || binding.phoneEdit.text.toString() == ""
-            || image.equals(default)){
-            Toast.makeText(this, "기타 특징 외의 모든 정보를\n입력하셔야 저장이 가능합니다.", Toast.LENGTH_SHORT).show()
-        }else{
-            Toast.makeText(this, "저장되었습니다.", Toast.LENGTH_SHORT).show()
-            App.prefs.onWardInfo = true
-            App.prefs.name = binding.nameEdit.text.toString()
-            App.prefs.height = binding.heightEdit.text.toString()
-            App.prefs.age = binding.ageEdit.text.toString()
-            App.prefs.number = binding.phoneEdit.text.toString()
-            if(binding.sexSpin.selectedItemPosition == 0){
-                App.prefs.sex = "남"
-            }else{
-                App.prefs.sex = "여"
-            }
-            App.prefs.extra = binding.extraEdit.text.toString()
-            finish()
-        }
+        return (binding.nameEdit.text.toString() == "" || binding.heightEdit.text.toString() == "" ||
+                binding.ageEdit.text.toString() == "" || binding.phoneEdit.text.toString() == "" || image.equals(default))
     }
 }

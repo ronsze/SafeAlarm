@@ -37,23 +37,24 @@ import kotlin.math.*
 
 class ForegroundService : Service() {
     private val role = App.prefs.role
-    private lateinit var socketT: socketThread
+    private val MAX_REQUEST_COUNT = 12
+
+
     private var locationManager: LocationManager? = null
-
-    private val lat1km: Double = 1.0 / 110.9875 ; private val lng1km: Double = 1.0 / 88.3435
-    private var lat_save: Double = 0.0 ; private var lng_save: Double = 0.0
+    private var latSave: Double = 0.0 ; private var lngSave: Double = 0.0
     private var locationCount = 0
-    private var prev_lat = 0.0 ; private var prev_lng = 0.0 ; private var prev_dis = 0.0
+    private var prevLat = 0.0 ; private var prevLng = 0.0 ; private var prevDis = 0.0
     private var arr: FloatArray = floatArrayOf(1.0f)
-    private var isFix_S = false
-    private var now_cell = 0
-    private lateinit var key: ByteArray
-    private lateinit var privateKey: PrivateKey
-    private var isSendCert = false
-    private var isCert = false
-    private var first = false
+    private var isFixS = false ; private var nowCell = 0
+    private var isSendCert = false ; private var isCert = false ; private var first = false
+    //private val lat1km: Double = 1.0 / 110.9875 ; private val lng1km: Double = 1.0 / 88.3435
 
-    private var entireData: MutableList<MutableList<Int>> = mutableListOf(
+    private lateinit var shardKey: ByteArray
+    private lateinit var privateKey: PrivateKey
+    private lateinit var socketT: socketThread
+
+
+    private var entirePathData: MutableList<MutableList<Int>> = mutableListOf(
         mutableListOf(56,57,58,68,67,66,56),
         mutableListOf(56,57,58,59,60,50,49,48,47,46,56),
         mutableListOf(56,57,67,68,69,59,58,48,47,46,56),
@@ -125,7 +126,7 @@ class ForegroundService : Service() {
         mutableListOf(57,66,65,55,45,55,56),
         mutableListOf(57,66,67,68,69,59,58,48,47,46,45,55,56)
     )
-    private var tmpData: MutableList<MutableList<Int>> = mutableListOf()
+    private var tmpPathData: MutableList<MutableList<Int>> = mutableListOf()
 
     companion object {
         val mSocket = App.mSocket
@@ -144,33 +145,23 @@ class ForegroundService : Service() {
                 mSocket.emit("HelpCall_W")
             }
         }
-        key = getKey()
-        if (mSocket.connected()) {
-            connectSocket()
-        }
-        if (App.prefs.role == "Guard") {
-            tmpData.addAll(entireData)
-        }
-        if (App.prefs.role == "Ward") {
-            try {
-                locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-                val hasFinePer = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                val hasCoarsePer = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                if (hasFinePer == PackageManager.PERMISSION_GRANTED &&
-                    hasCoarsePer == PackageManager.PERMISSION_GRANTED) {
-                    locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, gpsListener)
-                    locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0.0f, networkListener)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        LocalBroadcastManager.getInstance(this).registerReceiver(alarmManagerReceiver(), IntentFilter("Alarm"))
-        LocalBroadcastManager.getInstance(this).registerReceiver(timerReceiver(), IntentFilter("timer"))
+
+        shardKey = getKey()
+        checkSocketConneted()
+        copyEntirePathData()
+        registLocationReceiver()
+        registLocalBCReceiver()
+
         return START_STICKY
     }
 
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ통신 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    private fun checkSocketConneted(){
+        if (mSocket.connected()) {
+            connectSocket()
+        }
+    }
+
     private fun connectSocket() {
         socketT = socketThread()
         if(socketT.isAlive){
@@ -203,6 +194,34 @@ class ForegroundService : Service() {
         }
     }
 
+    private fun copyEntirePathData(){
+        if (App.prefs.role == "Guard") {
+            tmpPathData.addAll(entirePathData)
+        }
+    }
+
+    private fun registLocationReceiver(){
+        if (App.prefs.role == "Ward") {
+            try {
+                locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
+                val hasFinePer = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                val hasCoarsePer = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                if (hasFinePer == PackageManager.PERMISSION_GRANTED &&
+                    hasCoarsePer == PackageManager.PERMISSION_GRANTED) {
+                    locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, gpsListener)
+                    locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0.0f, networkListener)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun registLocalBCReceiver(){
+        LocalBroadcastManager.getInstance(this).registerReceiver(alarmManagerReceiver(), IntentFilter("Alarm"))
+        LocalBroadcastManager.getInstance(this).registerReceiver(timerReceiver(), IntentFilter("timer"))
+    }
+
     private val onConnectSocket = Emitter.Listener {            //최초 연걸
         mSocket.emit("enterRoom", App.prefs.room)
     }
@@ -217,11 +236,12 @@ class ForegroundService : Service() {
 
     private val onRequestLoc = Emitter.Listener {               //좌표 요청 받음
         if (role == "Ward") {
+            val msg = it[0].toString()
             try{
-                if(verifSign(it[0].toString())){
+                if(checkSign(msg)){
                     getLatLng()
                 }else{
-                    Log.e("서명검증 위치 요청 받음", "실패")
+                    Log.e("Receive 위치 요청 서명검증", "실패")
                 }
             }catch (e:Exception){
                 e.printStackTrace()
@@ -240,13 +260,17 @@ class ForegroundService : Service() {
         if(role == "Ward"){
             createNotification("보호자로부터 인증 요청이 도착했습니다.\n3분 안에 인증을 완료해주세요.")
             App.prefs.cert = true
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(3*60*1000)
-                if(App.prefs.cert){
-                    createNotification("인증을 수행하지 않았습니다.")
-                }
-                App.prefs.cert = false
+            startVerifyTimer_W()
+        }
+    }
+
+    private fun startVerifyTimer_W(){
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(3*60*1000)
+            if(App.prefs.cert){
+                createNotification("인증을 수행하지 않았습니다.")
             }
+            App.prefs.cert = false
         }
     }
 
@@ -268,16 +292,16 @@ class ForegroundService : Service() {
             var location = it[0].toString()
             try {
                 val `object` = JSONObject(location)
-                val deLat = decrypt(`object`.getString("latitude"), key)
-                val deLng = decrypt(`object`.getString("longitude"), key)
-                if(verifSign(deLat) && verifSign(deLng)){
+                val deLat = AESDecrypt(`object`.getString("latitude"), shardKey)
+                val deLng = AESDecrypt(`object`.getString("longitude"), shardKey)
+                if(checkSign(deLat) && checkSign(deLng)){
                     val latitude = deLat.split("SiGn")[0].toDouble()
                     val longitude = deLng.split("SiGn")[0].toDouble()
                     if (latitude == 0.0 && longitude == 0.0) {
                         locationCount += 1
                     } else {
                         locationCount = 0
-                        `cngMapLocation`(latitude, longitude)
+                        `sendCngMapBroadCast`(latitude, longitude)
                         first = true
                         var cell = getCell(latitude, longitude)
                         if (first) {
@@ -285,7 +309,7 @@ class ForegroundService : Service() {
                         }
                     }
                 }else{
-                    Log.e("서명검증 위치 받음", "실패")
+                    Log.e("Receive Location 서명 검증", "실패")
                     locationCount += 1
                 }
             } catch (e: JSONException) {
@@ -303,67 +327,44 @@ class ForegroundService : Service() {
     private fun getLatLng() {                                   //피보호자 좌표 구하는 함수
         var lat = 0.0 ; var lng = 0.0
         var location: Location? = null
-        var provider_str: String? = null ; var fix = "보정없음"
+        var providerStr: String? = null ; var fix = "보정없음"
         val isGPSEnable = locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val isNetworkEnable = locationManager!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         var json = JSONObject()
 
         if (!isGPSEnable && !isNetworkEnable) {
-            provider_str = provider_str.plus("error1")
+            providerStr = providerStr.plus("error1")
         } else {
             val hasFinePer = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             val hasCoarsePer = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
             if (hasFinePer == PackageManager.PERMISSION_GRANTED &&
                 hasCoarsePer == PackageManager.PERMISSION_GRANTED) {
-                val loc_g: Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                val loc_n: Location? = locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                val locG: Location? = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                val locN: Location? = locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                 if (locationManager != null) {
-                    if(loc_g != null && loc_n != null){
-                        if (loc_g.accuracy <= loc_n.accuracy) {
-                            location = loc_g
-                            provider_str = "GPS1"
-                        } else {
-                            location = loc_n
-                            provider_str = "Network1"
-                        }
+                    if(locG != null && locN != null){
+                        location = getLocatioObject(locG, locN)
                     }
                     if (location != null) {
-                        if((lat_save == 0.0 && lng_save == 0.0)){
-                            lat = location.latitude
-                            lng = location.longitude
-                            lat_save = lat ; lng_save = lng
-                        }
-                        else{
-                            val triple: Triple<Double, Double, String> = GPS_Filter(location)
-                            lat = triple.first
-                            lng = triple.second
-                            fix = triple.third
+                        val locTriple = getLocation(location)
+                        lat = locTriple.first
+                        lng = locTriple.second
+                        fix = locTriple.third
 
-                            if(lat - lat_save == 0.0 && lng - lng_save == 0.0){ }
-                            else if(isFix_S) {
-                                prev_dis = 0.0
-                            }
-                            else {
-                                prev_lat = lat - lat_save ; prev_lng = lng - lng_save
-                                Location.distanceBetween(lat_save, lng_save, lat, lng, arr)
-                                prev_dis = abs(arr[0]).toDouble()
-                            }
-                            lat_save = lat ; lng_save = lng
-                        }
                         json.put("accuracy", location.accuracy)
                         json.put("speed", location.speed)
                     } else {
-                        provider_str = provider_str.plus("error2")
+                        providerStr = providerStr.plus("error2")
                     }
                 } else {
-                    provider_str = provider_str.plus("error3")
+                    providerStr = providerStr.plus("error3")
                 }
             } else { }
         }
         try {
-            var enLat = encrypt(lat.toString(), key)
-            var enLng = encrypt(lng.toString(), key)
-            json.put("provider", provider_str)
+            var enLat = AESEncrypt(lat.toString(), shardKey)
+            var enLng = AESEncrypt(lng.toString(), shardKey)
+            json.put("provider", providerStr)
             json.put("latitude", enLat)
             json.put("longitude", enLng)
         } catch (e: Exception) {
@@ -372,99 +373,155 @@ class ForegroundService : Service() {
         mSocket.emit("callbackLoc", json)
     }
 
+    private fun getLocatioObject(locG: Location, locN: Location): Location{
+        if(locG.accuracy <= locN.accuracy){
+            return locG
+        }else{
+            return locN
+        }
+    }
+
+    private fun getLocation(location: Location): Triple<Double, Double, String>{
+        var lat = 0.0   ;   var lng = 0.0   ;   var fix = ""
+        if((latSave == 0.0 && lngSave == 0.0)){
+            lat = location.latitude
+            lng = location.longitude
+            latSave = lat ; lngSave = lng
+        }
+        else{
+            val triple: Triple<Double, Double, String> = GPS_Filter(location)
+            lat = triple.first
+            lng = triple.second
+            fix = triple.third
+
+            if(lat - latSave == 0.0 && lng - lngSave == 0.0){ }
+            else if(isFixS) {
+                prevDis = 0.0
+            }
+            else {
+                prevLat = lat - latSave ; prevLng = lng - lngSave
+                Location.distanceBetween(latSave, lngSave, lat, lng, arr)
+                prevDis = abs(arr[0]).toDouble()
+            }
+            latSave = lat ; lngSave = lng
+        }
+
+        return Triple(lat, lng, fix)
+    }
+
     private fun GPS_Filter(location: Location): Triple<Double, Double, String> {
         var first = location.latitude ; var second = location.longitude ; var third = location.speed
-        var lat_F: Double = first ; var lat_S: Double = first ; var lat_T: Double = first
-        var lng_F: Double = second ; var lng_S: Double = second ; var lng_T: Double = second
+        var latF: Double = first ; var latS: Double = first ; var latT: Double = first
+        var lngF: Double = second ; var lngS: Double = second ; var lngT: Double = second
         var fix = "보정없음" ; var isFix = false
         var speed = third * 5.0
-        val sub_lat = first - lat_save ; val sub_lng = second - lng_save
-        var ratio_dis = 0.0
+        val subLat = first - latSave ; val subLng = second - lngSave
+        var ratioDis = 0.0
 
         var arr: FloatArray = floatArrayOf(1.0f)
-        Location.distanceBetween(lat_save, lng_save, first, second, arr)
+        Location.distanceBetween(latSave, lngSave, first, second, arr)
         val distance = abs(arr[0])
-        //val ratio_dis = speed/distance
 
         if(distance >= speed + 5.0){
             if(speed == 0.0) speed = 5.0
             else speed += 2.0
 
-            ratio_dis = speed/distance
-            lat_F = lat_save + sub_lat * ratio_dis
-            lng_F = lng_save + sub_lng * ratio_dis
+            ratioDis = speed/distance
+            latF = latSave + subLat * ratioDis
+            lngF = lngSave + subLng * ratioDis
 
-            if(prev_dis == 0.0){
-                lat_S = lat_save + sub_lat * ratio_dis
-                lng_S = lng_save + sub_lng * ratio_dis
-                isFix_S = false
-                lat_T = lat_F
-                lng_T = lng_F
+            if(prevDis == 0.0){
+                isFixS = false
+                latT = latF
+                lngT = lngF
             }else {
-                ratio_dis = prev_dis / speed
-                lat_S = lat_save + prev_lat * ratio_dis
-                lng_S = lng_save + prev_lng * ratio_dis
-                isFix_S = true
-                lat_T = (lat_F + lat_S) / 2.0
-                lng_T = (lng_F + lng_S) / 2.0
+                ratioDis = prevDis / speed
+                latS = latSave + prevLat * ratioDis
+                lngS = lngSave + prevLng * ratioDis
+                isFixS = true
+                latT = (latF + latS) / 2.0
+                lngT = (lngF + lngS) / 2.0
             }
 
             isFix = true
         }
         if(isFix){
-            fix = "보정 : ${first} -> ${lat_T}, ${second} -> ${lng_T}, ${prev_dis}"
+            fix = "보정 : ${first} -> ${latT}, ${second} -> ${lngT}, ${prevDis}"
         }
-        return Triple(lat_T, lng_T, fix)
+        return Triple(latT, lngT, fix)
     }
 
-    private fun cngMapLocation(latitude: Double, longitude: Double) {       //위치 변경 브로드캐스트
+    private fun sendCngMapBroadCast(latitude: Double, longitude: Double) {       //위치 변경 브로드캐스트
         var intent = Intent(App.CNG_LOC)
         intent.putExtra("latitude", latitude)
         intent.putExtra("longitude", longitude)
-        App.prefs.s_lat = latitude.toString()
-        App.prefs.s_lng = longitude.toString()
+        App.prefs.saveLat = latitude.toString()
+        App.prefs.saveLng = longitude.toString()
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     private fun sendLocReq() {                                              //위치 요청
-
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
                 delay(5000)
-                if (locationCount >= 12) {
-                    //일정 횟수 이상 응답이 없을 경우 사용자에게 알림
-                    Log.e("위치 요청", "응답 없음 1분")
-                    createNotification("피보호자의 위치를 받아오지 못했습니다.")
-                    locationCount = 0
+                if (checkNoResponseCnt()) {
+                    sendNoResponseMaxMsg()
                 }else{
-                    var arr = ByteArray(10)
-                    SecureRandom().nextBytes(arr)
-                    var str = Base64Utils.encode(arr)
-                    mSocket.emit("requestLoc", str+getSign(str))
+                    val randomText = getRandomText(32).substring(0, 32)
+                    mSocket.emit("requestLoc", randomText+getSign(randomText))
                     locationCount += 1
                 }
             }
         }
     }
 
+    private fun checkNoResponseCnt(): Boolean{
+        return locationCount >= MAX_REQUEST_COUNT
+    }
+
+    private fun sendNoResponseMaxMsg(){
+        Log.e("위치 요청", "응답 없음 1분")
+        createNotification("피보호자의 위치를 받아오지 못했습니다.")
+        locationCount = 0
+    }
+
+    private fun getRandomText(size: Int): String{
+        var randomArray = ByteArray(size)
+        SecureRandom().nextBytes(randomArray)
+        var randomText = Base64Utils.encode(randomArray)
+
+        return randomText
+    }
+
     private fun checkCell(cell: Int){
-        if(cell != now_cell){
-            now_cell = cell
-            val next_cell = predictionPath(cell)
-            if(next_cell == 0){
-                createNotification("피보호자가 예측 경로를 벗어났습니다.")
-                drawPath(-1, -1)
-                App.prefs.isPred = false
-            }else if(next_cell == -1) {
-                createNotification("예측이 종료되었습니다.")
-                drawPath(-1, -1)
-                App.prefs.isPred = false
-            }
-            else{
-                App.prefs.isPred = true
-                drawPath(now_cell, next_cell)
+        if(cell != nowCell){
+            nowCell = cell
+            val nextCell = predictionPath(cell)
+            if(nextCell == 0){
+                sendEscapePathMsg()
+            }else if(nextCell == -1) {
+                sendPredDoneMsg()
+            }else{
+                drawNextPath(nextCell)
             }
         }
+    }
+
+    private fun sendEscapePathMsg(){
+        createNotification("피보호자가 예측 경로를 벗어났습니다.")
+        drawPath(-1, -1)
+        App.prefs.isPred = false
+    }
+
+    private fun sendPredDoneMsg(){
+        createNotification("예측이 종료되었습니다.")
+        drawPath(-1, -1)
+        App.prefs.isPred = false
+    }
+
+    private fun drawNextPath(nextCell: Int){
+        App.prefs.isPred = true
+        drawPath(nowCell, nextCell)
     }
 
     private fun predictionPath(cell: Int): Int{
@@ -478,68 +535,68 @@ class ForegroundService : Service() {
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        var next_cell = 0 ; var size = tmpData.size ; var i = 0
-        var end_pred = false
+        var nextCell = 0 ; var size = tmpPathData.size ; var i = 0
+        var endPred = false
         while(i < size){
-            if(tmpData[i][0] != cell){
-                tmpData.removeAt(i)
+            if(tmpPathData[i][0] != cell){
+                tmpPathData.removeAt(i)
                 i -= 1
                 size -= 1
-                end_pred = false
+                endPred = false
             }else{
-                tmpData[i].removeAt(0)
-                if(!tmpData[i].isEmpty()){
-                    subList[tmpData[i][0]] += 1
-                    end_pred = true
+                tmpPathData[i].removeAt(0)
+                if(!tmpPathData[i].isEmpty()){
+                    subList[tmpPathData[i][0]] += 1
+                    endPred = true
                 }
             }
             i += 1
         }
-        next_cell = subList.indexOf(subList.max())
-        if(tmpData.size == 0){
-            if(end_pred){
+        nextCell = subList.indexOf(subList.max())
+        if(tmpPathData.size == 0){
+            if(endPred){
                 return -1
             }else {
                 return 0
             }
         }else{
-            return next_cell
+            return nextCell
         }
     }
 
     private fun getCell(lat: Double, lng: Double): Int{
-        var lat_cell = 37.58910900845096 ; var lng_cell = 127.049195384405
-        val lat_add = 0.0027030070953936 ; val lng_add = 0.0033958355736415
-        var lat_num = 0 ; var lng_num = 1
-        var cell_num = 0
+        var latCell = 37.58910900845096 ; var lngCell = 127.049195384405
+        val latAdd = 0.0027030070953936 ; val lngAdd = 0.0033958355736415
+        var latNum = 0 ; var lngNum = 1
+        var cellNum = 0
 
-        while(lat_cell > 37.56207893749702){
-            if(lat in lat_cell-lat_add..lat_cell){
+        while(latCell > 37.56207893749702){
+            if(lat in latCell-latAdd..latCell){
                 break
             }else{
-                lat_num += 1
-                lat_cell -= lat_add
+                latNum += 1
+                latCell -= latAdd
             }
         }
-        while(lng_cell < 127.0831537401414){
-            if(lng in lng_cell..lng_cell+lng_add){
+        while(lngCell < 127.0831537401414){
+            if(lng in lngCell..lngCell+lngAdd){
                 break
             }else{
-                lng_num += 1
-                lng_cell += lng_add
+                lngNum += 1
+                lngCell += lngAdd
             }
         }
-        if(lat_num > 10 || lng_num > 10){
-            cell_num = 0
+        if(latNum > 10 || lngNum > 10){
+            cellNum = 0
         }else{
-            cell_num = (lat_num*10) + lng_num
+            cellNum = (latNum*10) + lngNum
         }
-        return cell_num
+        return cellNum
     }
 
     private fun drawPath(now_cell: Int, next_cell: Int){
-        App.prefs.now = now_cell
-        App.prefs.next = next_cell
+        App.prefs.nowCell = now_cell
+        App.prefs.nextCell = next_cell
     }
 
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ알람 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -555,20 +612,18 @@ class ForegroundService : Service() {
         vibrator.vibrate(vibrationEffect)
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ암호화 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-    fun encrypt(input: String, key: ByteArray): String {
-        var arr = ByteArray(320)
-        SecureRandom().nextBytes(arr)
-        var str = Base64Utils.encode(arr).substring(0, 16)
+    private fun AESEncrypt(input: String, key: ByteArray): String {
+        var randomText = getRandomText(320).substring(0, 16)
         var plainText = input.plus(getSign(input))
-        val iv = getIv(str)
+        val iv = getIv(randomText)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val keySpec = SecretKeySpec(key,"AES")
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, iv)
         val encrypt = cipher.doFinal(plainText.toByteArray());
-        return str + Base64Utils.encode(encrypt)
+        return randomText + Base64Utils.encode(encrypt)
     }
 
-    fun decrypt(input: String, key: ByteArray): String {
+    private fun AESDecrypt(input: String, key: ByteArray): String {
         var iv = getIv(input.substring(0, 16))
         var cryptText = input.substring(16, input.length)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -587,7 +642,7 @@ class ForegroundService : Service() {
     }
 
     fun getKey(): ByteArray{
-        var keyArr: ByteArray = App.prefs.key.toByteArray().slice(0..31).toByteArray()
+        var keyArr: ByteArray = App.prefs.shardKey.toByteArray().slice(0..31).toByteArray()
         var pkStr = App.prefs.privateKey
         val pk = Base64Utils.decode(pkStr)
 
@@ -595,70 +650,6 @@ class ForegroundService : Service() {
         val private = kf.generatePrivate(PKCS8EncodedKeySpec(pk))
         this.privateKey = private
         return keyArr
-    }
-
-    fun getSign(input: String): String{
-        val hash: ByteArray
-        try{
-            val md = MessageDigest.getInstance("SHA-256")
-            md.update(input.toByteArray())
-            hash = md.digest()
-        }catch (e: CloneNotSupportedException){
-            throw DigestException("couldn't make digest of patial content")
-        }
-        return "SiGn"+ rsaEncrypt(Base64Utils.encode(hash), getPrivateKey())
-    }
-
-    fun verifSign(input: String): Boolean{
-        var arr = input.split("SiGn")
-        val cipherText = arr[0]
-        val sign = rsaDecrypt(arr[1], getPublicKey())
-
-        val hash: ByteArray
-        try{
-            val md = MessageDigest.getInstance("SHA-256")
-            md.update(cipherText.toByteArray())
-            hash = md.digest()
-        }catch (e: CloneNotSupportedException){
-            throw DigestException("couldn't make digest of patial content")
-        }
-        var hSign = Base64Utils.encode(hash)
-        return hSign == sign
-    }
-
-    fun getPublicKey(): PublicKey{
-        var kf = KeyFactory.getInstance("RSA")
-        var public = kf.generatePublic(X509EncodedKeySpec(Base64Utils.decode(App.prefs.publicKey)))
-        return public
-    }
-
-    fun getPrivateKey(): PrivateKey{
-        var kf = KeyFactory.getInstance("RSA")
-        var private = kf.generatePrivate(PKCS8EncodedKeySpec(Base64Utils.decode(App.prefs.privateKey)))
-        return private
-    }
-
-    fun rsaEncrypt(input: String, key: PrivateKey): String{
-        try {
-            val cipher = Cipher.getInstance("RSA")
-            cipher.init(Cipher.ENCRYPT_MODE, key)
-            val encrypt = cipher.doFinal(input.toByteArray())
-            return Base64Utils.encode(encrypt)
-        }catch (e: Exception){
-            throw RuntimeException(e)
-        }
-    }
-
-    fun rsaDecrypt(input: String, key: PublicKey): String{
-        try {
-            var byteEncrypt: ByteArray = Base64Utils.decode(input)
-            val cipher = Cipher.getInstance("RSA")
-            cipher.init(Cipher.DECRYPT_MODE, key)
-            val decrypt = cipher.doFinal(byteEncrypt)
-            return String(decrypt)
-        }catch (e: Exception){
-            throw RuntimeException(e)
-        }
     }
 
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ서비스 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -675,18 +666,14 @@ class ForegroundService : Service() {
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ리스너ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     val gpsListener = object : LocationListener {
-        override fun onLocationChanged(location: Location) {
-
-        }
+        override fun onLocationChanged(location: Location) {}
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String) {}
         override fun onProviderDisabled(provider: String) {}
     }
 
     val networkListener = object : LocationListener {
-        override fun onLocationChanged(location: Location) {
-
-        }
+        override fun onLocationChanged(location: Location) {}
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String) {}
         override fun onProviderDisabled(provider: String) {}
@@ -717,20 +704,31 @@ class ForegroundService : Service() {
 class alarmManagerReceiver: BroadcastReceiver(){
     override fun onReceive(context: Context?, intent: Intent?) {
         if(intent != null){
-            var rIntent = Intent("alarm")
-            val requestNum = intent.getIntExtra("num", 999999)
-            val hour = intent.getStringExtra("hour")
-            val min = intent.getStringExtra("min")
-            var tIntent = Intent("timer")
-            rIntent.putExtra("num", requestNum)
-            rIntent.putExtra("hour", hour)
-            rIntent.putExtra("min", min)
             App.mSocket.emit("sendCert")
             if(context != null){
-                LocalBroadcastManager.getInstance(context).sendBroadcast(rIntent)
-                LocalBroadcastManager.getInstance(context).sendBroadcast(tIntent)
+                sendReRegistAlarmBroadCast(intent, context)
+                sendTimerBroadCast(context)
             }
         }
+    }
+
+    private fun sendReRegistAlarmBroadCast(intent: Intent, context: Context){
+        val rIntent = Intent("alarm")
+
+        val requestNum = intent.getIntExtra("num", 999999)
+        val hour = intent.getStringExtra("hour")
+        val min = intent.getStringExtra("min")
+
+        rIntent.putExtra("num", requestNum)
+        rIntent.putExtra("hour", hour)
+        rIntent.putExtra("min", min)
+
+        LocalBroadcastManager.getInstance(context).sendBroadcast(rIntent)
+    }
+
+    private fun sendTimerBroadCast(context: Context){
+        val tIntent = Intent("timer")
+        LocalBroadcastManager.getInstance(context).sendBroadcast(tIntent)
     }
 }
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ

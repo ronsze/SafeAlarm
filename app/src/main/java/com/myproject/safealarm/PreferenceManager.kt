@@ -5,21 +5,22 @@ import android.content.SharedPreferences
 
 class PreferenceManager(context: Context) {
     val PREFS_FILENAME = "prefs"
+    val SAVE_LAT = "saveLat"
+    val SAVE_LNG = "saveLng"
     val ID = "id"
     val ID_ON = "idOn"          //id가 만들어져 있는지
     val REGIST_KEY = "regKey"
     val ROLE_KEY = "role"
     val ROOM_NUM = "room"
-    val SAVE_LAT = "s_lat"
-    val SAVE_LNG = "s_lng"
     val PRIVATE_KEY = "privateKey"
-    val P_KEY = "key"
+    var PUBLIC_KEY = "publicKey"
+    val SHARD_KEY = "shardKey"
     val PASSWORD = "pass"
     val CERTIFICATION = "cert"
-    val ALARM_COUNT = "a_count"
+    val ALARM_COUNT = "alarmCount"
     val PREDICTION = "isPred"
-    val CELL_NOW = "now"
-    val CELL_NEXT = "next"
+    val CELL_NOW = "nowCell"
+    val CELL_NEXT = "nextCell"
     val ALARM_TIME = "alarmTime"
     val WARD_INFO_REGIST = "onWardInfo"
     val W_NAME = "name"
@@ -29,15 +30,14 @@ class PreferenceManager(context: Context) {
     val W_SEX = "sex"
     val EXTRA = "extra"
     var CSR = "csr"
-    var PUBLIC_KEY = "publicKey"
     var INFO_REGIST = "infoRegist"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
 
-    var s_lat: String
+    var saveLat: String
         get() = prefs.getString(SAVE_LAT, "37.58090")!!
         set(value) = prefs.edit().putString(SAVE_LAT, value).apply()
 
-    var s_lng: String
+    var saveLng: String
         get() = prefs.getString(SAVE_LNG, "127.07432")!!
         set(value) = prefs.edit().putString(SAVE_LNG, value).apply()
 
@@ -61,9 +61,17 @@ class PreferenceManager(context: Context) {
         get() = prefs.getString(ROOM_NUM, "")!!
         set(value) = prefs.edit().putString(ROOM_NUM, value).apply()
 
-    var key: String
-        get() = prefs.getString(P_KEY, "")!!
-        set(value) = prefs.edit().putString(P_KEY, value).apply()
+    var privateKey: String
+        get() = prefs.getString(PRIVATE_KEY, "")!!
+        set(value) = prefs.edit().putString(PRIVATE_KEY, value).apply()
+
+    var publicKey: String
+        get() = prefs.getString(PUBLIC_KEY, "")!!
+        set(value) = prefs.edit().putString(PUBLIC_KEY, value).apply()
+
+    var shardKey: String
+        get() = prefs.getString(SHARD_KEY, "")!!
+        set(value) = prefs.edit().putString(SHARD_KEY, value).apply()
 
     var pass: String
         get() = prefs.getString(PASSWORD, "0000")!!
@@ -73,7 +81,7 @@ class PreferenceManager(context: Context) {
         get() = prefs.getBoolean(CERTIFICATION, false)
         set(value) = prefs.edit().putBoolean(CERTIFICATION, value).apply()
 
-    var a_count: Int
+    var alarmCount: Int
         get() = prefs.getInt(ALARM_COUNT, 0)
         set(value) = prefs.edit().putInt(ALARM_COUNT, value).apply()
 
@@ -81,11 +89,11 @@ class PreferenceManager(context: Context) {
         get() = prefs.getBoolean(PREDICTION, false)
         set(value) = prefs.edit().putBoolean(PREDICTION, value).apply()
 
-    var now: Int
+    var nowCell: Int
         get() = prefs.getInt(CELL_NOW, -1)!!
         set(value) = prefs.edit().putInt(CELL_NOW, value).apply()
 
-    var next: Int
+    var nextCell: Int
         get() = prefs.getInt(CELL_NEXT, -1)!!
         set(value) = prefs.edit().putInt(CELL_NEXT, value).apply()
 
@@ -120,14 +128,6 @@ class PreferenceManager(context: Context) {
     var extra: String
         get() = prefs.getString(EXTRA, "")!!
         set(value) = prefs.edit().putString(EXTRA, value).apply()
-
-    var privateKey: String
-        get() = prefs.getString(PRIVATE_KEY, "")!!
-        set(value) = prefs.edit().putString(PRIVATE_KEY, value).apply()
-
-    var publicKey: String
-        get() = prefs.getString(PUBLIC_KEY, "")!!
-        set(value) = prefs.edit().putString(PUBLIC_KEY, value).apply()
 
     var csr: String
         get() = prefs.getString(CSR, "")!!

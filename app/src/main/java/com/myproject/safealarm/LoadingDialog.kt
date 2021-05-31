@@ -5,10 +5,10 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.WindowManager
 
-class ProgressDialog(val context: Context) {
+class LoadingDialog(val context: Context) {
     private val dialog = Dialog(context)
 
-    fun myDig() {
+    fun show() {
         dialog.setContentView(R.layout.progress_dialog)
 
         dialog.window!!.setLayout(

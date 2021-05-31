@@ -1,10 +1,7 @@
 package com.myproject.safealarm
 
-import android.content.Context
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.Response
-import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.http.*
@@ -12,28 +9,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 import java.lang.RuntimeException
-import java.security.KeyStore
-import java.security.cert.Certificate
 import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import javax.net.SocketFactory
 import javax.net.ssl.*
 
 data class ResponseDC(var result: String? = null)
 data class ResponseInfo(var result: Any? = null,
                         var photo: Any? = null)
-data class ResponseMissing(
-                           val id: String? = null,
-                           val name: String? = null,
-                           val age: String? = null,
-                           val sex: String? = null,
-                           val height: String? = null,
-                           val phone: String? = null,
-                           val extra: String? = null,
-                           val looks: String? = null,
-                           val extra2: String? = null,
-                           val loc: String? = null)
 
 interface APIInterface{
     @FormUrlEncoded

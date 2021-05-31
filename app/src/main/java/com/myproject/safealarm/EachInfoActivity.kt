@@ -5,24 +5,16 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
-import com.google.android.gms.common.util.Base64Utils
 import com.myproject.safealarm.databinding.ActivityEachInfoBinding
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.CameraPosition
-import com.naver.maps.map.NaverMap
-import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.overlay.OverlayImage
-import java.io.File
-import java.io.FileOutputStream
 import java.lang.Exception
 import java.lang.RuntimeException
 
 class EachInfoActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityEachInfoBinding
     private var context = this
+
+    private lateinit var binding: ActivityEachInfoBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,15 +39,15 @@ class EachInfoActivity : AppCompatActivity() {
     private fun setView(){
         val intent = this.intent
         if(intent != null){
-            var name = intent.getStringExtra("name")
-            var sex = intent.getStringExtra("sex")
-            var age = intent.getStringExtra("age")
-            var height = intent.getStringExtra("height")
-            var number = intent.getStringExtra("number")
-            var looks = intent.getStringExtra("looks")
-            var time = intent.getStringExtra("time")
-            var loc = intent.getStringExtra("loc")
-            var extra1 = intent.getStringExtra("extra")
+            val name = intent.getStringExtra("name")
+            val sex = intent.getStringExtra("sex")
+            val age = intent.getStringExtra("age")
+            val height = intent.getStringExtra("height")
+            val number = intent.getStringExtra("number")
+            val looks = intent.getStringExtra("looks")
+            val time = intent.getStringExtra("time")
+            val loc = intent.getStringExtra("loc")
+            val extra1 = intent.getStringExtra("extra")
             binding.photo.setImageBitmap(loadCacheImg())
             binding.nameText.text = "이름 : ${name} (${age}세, ${sex}, 신장${height}cm)"
             binding.phoneText.text = "연락처 : ${number}"
@@ -64,7 +56,7 @@ class EachInfoActivity : AppCompatActivity() {
             binding.locText.text = "마지막 위치 : ${loc}"
             binding.extra1Text.text = "신체 특징 : ${extra1}"
         }else{
-            Log.e("씨발", "좆같네")
+            Log.e("setView", "실패")
         }
 
     }
@@ -81,7 +73,6 @@ class EachInfoActivity : AppCompatActivity() {
 
     private fun extraDialog(extra: String){
         val builder = AlertDialog.Builder(this)
-
         builder.setTitle("기타 사항")
         builder.setMessage(extra)
         builder.setNegativeButton("확인", null)

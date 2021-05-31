@@ -3,12 +3,8 @@ package com.myproject.safealarm
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,33 +12,31 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.internal.LinkedTreeMap
 import com.myproject.safealarm.databinding.ActivityMissingInfoBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Exception
-import java.lang.RuntimeException
 
 class MissingInfoActivity : AppCompatActivity() {
+    private val context = this
+
     private lateinit var binding: ActivityMissingInfoBinding
     private lateinit var adapter: BaseAdapter
-    private lateinit var globalInfo: List<Map<*, *>>
-    private val context = this
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMissingInfoBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
 
-        getInfo()
+        loadInfo()
 
         binding.refresh.setOnClickListener {
-            getInfo()
+            loadInfo()
         }
 
         binding.list.setOnItemClickListener { parent, view, position, id ->
@@ -51,7 +45,7 @@ class MissingInfoActivity : AppCompatActivity() {
 
                 var data: Map<*, *> = parent.getItemAtPosition(position) as Map<*, *>
                 var str = (data["photo"] as LinkedTreeMap<*, *>)["data"] as ArrayList<Double>
-                saveCacheImg(getBitmap(str))
+                saveCacheImg(arrayListToBitmap(str))
                 var name = data["name"] as String ; var sex = data["sex"] as String
                 var age = data["age"] as String ; var height = data["height"] as String
                 var number = data["number"] as String ; var extra = data["extra"] as String
@@ -76,21 +70,20 @@ class MissingInfoActivity : AppCompatActivity() {
         }
     }
 
-    private fun getInfo() {
-        val proDialog = ProgressDialog(this)
-        proDialog.myDig()
+    private fun loadInfo() {
+        val loadingDlog = LoadingDialog(this)
+        loadingDlog.show()
         Singleton.server.getInfo().enqueue(object : Callback<ResponseInfo> {
             override fun onResponse(call: Call<ResponseInfo>, response: Response<ResponseInfo>) {
-                var res = response.body()!!.result as List<Map<*, *>>
-                globalInfo = res
-                adapter = InfoListAdapter(context, res)
+                var info = response.body()!!.result as List<Map<*, *>>
+                adapter = InfoListAdapter(context, info)
                 binding.list.adapter = adapter
-                proDialog.dismiss()
+                loadingDlog.dismiss()
             }
 
             override fun onFailure(call: Call<ResponseInfo>, t: Throwable) {
                 Log.e("실종자 정보", "실패")
-                proDialog.dismiss()
+                loadingDlog.dismiss()
             }
 
         })
@@ -105,26 +98,6 @@ class MissingInfoActivity : AppCompatActivity() {
             out.close()
         }catch(e: Exception){
             e.printStackTrace()
-        }
-    }
-
-    fun exByte(list: ArrayList<Double>): ByteArray {
-        var list2: MutableList<Byte> = mutableListOf()
-        for (i in 0..list.size - 1) {
-            list2.add(list[i].toInt().toByte())
-        }
-        var arr = list2.toByteArray()
-        return arr
-    }
-
-    fun getBitmap(input: ArrayList<Double>): Bitmap {
-        var arr = exByte(input)
-
-        try {
-            var bitmap = BitmapFactory.decodeByteArray(arr, 0, arr.size)
-            return bitmap
-        } catch (e: Exception) {
-            throw RuntimeException(e)
         }
     }
 
@@ -145,27 +118,23 @@ class MissingInfoActivity : AppCompatActivity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
             val view: View = LayoutInflater.from(context).inflate(R.layout.ms_info_list, null)
 
-            val photo = view.findViewById<ImageView>(R.id.ms_photo)
-            val name = view.findViewById<TextView>(R.id.ms_name)
-            val sex = view.findViewById<TextView>(R.id.ms_sex)
-            val age = view.findViewById<TextView>(R.id.ms_age)
-            val height = view.findViewById<TextView>(R.id.ms_height)
-            val time = view.findViewById<TextView>(R.id.ms_time)
-            val loc = view.findViewById<TextView>(R.id.ms_loc)
+            val photoView = view.findViewById<ImageView>(R.id.ms_photo)
+            val nameView = view.findViewById<TextView>(R.id.ms_name)
+            val sexView = view.findViewById<TextView>(R.id.ms_sex)
+            val ageView = view.findViewById<TextView>(R.id.ms_age)
+            val heightView = view.findViewById<TextView>(R.id.ms_height)
+            val timeView = view.findViewById<TextView>(R.id.ms_time)
+            val locView = view.findViewById<TextView>(R.id.ms_loc)
 
             val info = infoArr[position]
             var str = (info["photo"] as LinkedTreeMap<*, *>)["data"] as ArrayList<Double>
-            photo.setImageBitmap(getBitmap(str))
-            name.text = ("이름 : ${info["name"] as String}")
-            sex.text = ("성별 : ${info["sex"] as String}")
-            age.text = "나이 : ${info["age"] as String}세"
-            height.text = "키 : ${info["height"] as String}cm"
-            if (info["time"] == null) {
-                time.text = ("실종시간\nnull")
-            } else {
-                time.text = ("실종 시간\n${info["time"] as String}")
-            }
-            loc.text = ("${info["loc"] as String}")
+            photoView.setImageBitmap(arrayListToBitmap(str))
+            nameView.text = ("이름 : ${info["name"] as String}")
+            sexView.text = ("성별 : ${info["sex"] as String}")
+            ageView.text = ("나이 : ${info["age"] as String}세")
+            heightView.text = ("키 : ${info["height"] as String}cm")
+            timeView.text = ("실종 시간\n${info["time"] as String}")
+            locView.text = ("${info["loc"] as String}")
 
             return view
         }

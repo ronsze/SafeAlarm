@@ -17,10 +17,12 @@ import java.io.IOException
 import java.util.*
 
 class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
+    private val context = this
+
     private lateinit var binding: ActivityMissingMapBinding
     private lateinit var mapView: MapView
     private lateinit var marker: Marker
-    private var canAdd = false
+
     companion object {
         lateinit var naverMap: NaverMap
     }
@@ -37,16 +39,6 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.getMapAsync(this)
     }
 
-    private fun setLocation(){
-        val mIntent = this.intent
-        if(mIntent != null){
-            var loc = mIntent.getStringExtra("loc")
-            if(loc != null){
-                cngLocation(loc)
-            }
-        }
-    }
-
     override fun onMapReady(naverMap: NaverMap) {                                           //지도 최초 생성
         MissingMapActivity.naverMap = naverMap
         naverMap.setMapType(NaverMap.MapType.Basic);                                    //지도 뒷 배경
@@ -58,6 +50,23 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         MissingMapActivity.naverMap.cameraPosition = cameraPosition
         setLocation()
+    }
+
+    private fun setLocation(){
+        val mIntent = this.intent
+        if(mIntent != null){
+            var loc = mIntent.getStringExtra("loc")
+            if(loc != null){
+                val location = textToLocation(loc, context)
+                val lat = location.first  ; val lng = location.second
+                if(lat == 0.0 && lng == 0.0){
+                    Toast.makeText(this, "일치하는 주소가 없습니다.", Toast.LENGTH_SHORT).show()
+                }else{
+                    moveMaker(lat, lng)
+                }
+
+            }
+        }
     }
 
     private fun moveMaker(lat: Double, lng: Double){
@@ -72,23 +81,5 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
             13.0                                                                 //줌 레벨
         )
         MissingMapActivity.naverMap.cameraPosition = cameraPosition
-    }
-
-    private fun cngLocation(text: String) {           //위도, 경도를 주소로 변경
-        val address = text.replace("\\s".toRegex(), "")
-        val mGeocoder = Geocoder(this, Locale.KOREAN)
-        var list: List<Address>? = null
-        try {
-            list = mGeocoder.getFromLocationName(address, 10)
-            canAdd = true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            canAdd = false
-        }
-        if(list == null || list.size <= 0){
-            Toast.makeText(this, "일치하는 주소가 없습니다.", Toast.LENGTH_SHORT).show()
-        }else{
-            moveMaker(list.get(0).latitude, list.get(0).longitude)
-        }
     }
 }
