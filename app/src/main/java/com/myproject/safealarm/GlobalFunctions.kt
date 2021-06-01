@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Address
 import android.location.Geocoder
+import android.util.Log
 import com.google.android.gms.common.util.Base64Utils
 import okhttp3.OkHttpClient
 import java.io.*
@@ -38,14 +39,24 @@ fun getHash(text: String): ByteArray{
     return hash
 }
 
-fun checkSign(msg: String): Boolean{
+fun checkSign(msg: String, publicKey: PublicKey): Boolean{
     val msgArr = msg.split("SiGn")
     val originText = msgArr[0]
     val sign = msgArr[1]
     val textSign = Base64Utils.encode(getHash(originText))
-    val originSign = rsaDecrypt(sign, getPublicKey())
+    val originSign = rsaDecrypt(sign, publicKey)
+
+    Log.e("서명1", textSign)
+    Log.e("서명2", originSign)
 
     return textSign == originSign
+}
+
+fun checkCASign(msg: ByteArray, sign: ByteArray, publicKey: PublicKey): Boolean{
+    val signature = Signature.getInstance("SHA256withRSA")
+    signature.initVerify(publicKey)
+    signature.update(msg)
+    return signature.verify(sign)
 }
 
 fun rsaEncrypt(input: String, key: PrivateKey): String{
@@ -83,6 +94,12 @@ fun getPublicKey(): PublicKey {
     return public
 }
 
+fun getCAPublicKey(): PublicKey{
+    var kf = KeyFactory.getInstance("RSA")
+    var public = kf.generatePublic(X509EncodedKeySpec(Base64Utils.decode(App.prefs.CAPublic)))
+    return public
+}
+
 fun saveCertificate(response: String, path: File?){
     if(path != null){
         var tempFile = File(path, "certificate.crt")
@@ -102,7 +119,12 @@ fun saveCertificate(response: String, path: File?){
         }
         var kf = KeyFactory.getInstance("RSA")
         var public = kf.generatePublic(X509EncodedKeySpec(ca.publicKey.encoded))
-        App.prefs.publicKey = Base64Utils.encode(public.encoded)
+
+        if(checkCASign(ca.tbsCertificate, ca.signature, getCAPublicKey())){
+            App.prefs.publicKey = Base64Utils.encode(public.encoded)
+        }else{
+            Log.e("CA서명 검증", "실패")
+        }
     }
 }
 

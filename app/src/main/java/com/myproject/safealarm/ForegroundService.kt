@@ -238,7 +238,7 @@ class ForegroundService : Service() {
         if (role == "Ward") {
             val msg = it[0].toString()
             try{
-                if(checkSign(msg)){
+                if(checkSign(msg, getPublicKey())){
                     getLatLng()
                 }else{
                     Log.e("Receive 위치 요청 서명검증", "실패")
@@ -294,7 +294,7 @@ class ForegroundService : Service() {
                 val `object` = JSONObject(location)
                 val deLat = AESDecrypt(`object`.getString("latitude"), shardKey)
                 val deLng = AESDecrypt(`object`.getString("longitude"), shardKey)
-                if(checkSign(deLat) && checkSign(deLng)){
+                if(checkSign(deLat, getPublicKey()) && checkSign(deLng, getPublicKey())){
                     val latitude = deLat.split("SiGn")[0].toDouble()
                     val longitude = deLng.split("SiGn")[0].toDouble()
                     if (latitude == 0.0 && longitude == 0.0) {
@@ -613,7 +613,7 @@ class ForegroundService : Service() {
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ암호화 관련ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     private fun AESEncrypt(input: String, key: ByteArray): String {
-        var randomText = getRandomText(320).substring(0, 16)
+        var randomText = getRandomText(32).substring(0, 16)
         var plainText = input.plus(getSign(input))
         val iv = getIv(randomText)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -704,15 +704,15 @@ class ForegroundService : Service() {
 class alarmManagerReceiver: BroadcastReceiver(){
     override fun onReceive(context: Context?, intent: Intent?) {
         if(intent != null){
-            App.mSocket.emit("sendCert")
             if(context != null){
-                sendReRegistAlarmBroadCast(intent, context)
+                App.mSocket.emit("sendCert")
+                sendReRegistAlarm(intent, context)
                 sendTimerBroadCast(context)
             }
         }
     }
 
-    private fun sendReRegistAlarmBroadCast(intent: Intent, context: Context){
+    private fun sendReRegistAlarm(intent: Intent, context: Context){
         val rIntent = Intent("alarm")
 
         val requestNum = intent.getIntExtra("num", 999999)

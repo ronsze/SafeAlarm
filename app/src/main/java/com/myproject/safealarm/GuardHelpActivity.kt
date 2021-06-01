@@ -87,7 +87,6 @@ class GuardHelpActivity : AppCompatActivity() {
                     }
                 })
             }
-
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.d("피보호자 정보", "실패")
                 Toast.makeText(context, "실패했습니다..", Toast.LENGTH_SHORT).show()

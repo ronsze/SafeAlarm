@@ -114,7 +114,7 @@ class RegistActivity : AppCompatActivity() {
     }
 
     private val onCallbackPrime = Emitter.Listener {
-        Singleton.server.getCert(remoteID).enqueue(object:Callback<ResponseDC>{
+        Singleton.server.getCert(this.remoteID).enqueue(object:Callback<ResponseDC>{
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
                 val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
                 saveCertificate(response.body()!!.result!!, path) //result = X509certificate
@@ -139,7 +139,7 @@ class RegistActivity : AppCompatActivity() {
         try {
             val msg = it[0].toString()
             val r1 = msg.split("SiGn")[0].toBigInteger()
-            if(checkSign(msg)){
+            if(checkSign(msg, getPublicKey())){
                 val y = getY()
                 saveShardKey(r1, y)
                 sendR2(y)

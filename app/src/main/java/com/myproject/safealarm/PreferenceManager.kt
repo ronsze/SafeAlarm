@@ -31,6 +31,7 @@ class PreferenceManager(context: Context) {
     val EXTRA = "extra"
     var CSR = "csr"
     var INFO_REGIST = "infoRegist"
+    val CA_PUBLIC = "CAPublic"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
 
     var saveLat: String
@@ -136,4 +137,8 @@ class PreferenceManager(context: Context) {
     var infoRegist: Boolean
         get() = prefs.getBoolean(INFO_REGIST, false)
         set(value) = prefs.edit().putBoolean(INFO_REGIST, value).apply()
+
+    var CAPublic: String
+        get() = prefs.getString(CA_PUBLIC, "")!!
+        set(value) = prefs.edit().putString(CA_PUBLIC, value).apply()
 }

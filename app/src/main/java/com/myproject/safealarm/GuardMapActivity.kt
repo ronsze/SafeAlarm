@@ -164,8 +164,8 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setMarker(lat: Double, lng: Double){                                        //마커 생성
         marker.position = LatLng(lat, lng)  //마커 위치
         marker.icon = OverlayImage.fromResource(R.drawable.ic_baseline_place_24)    //마커 아이콘
-        marker.width = 75
-        marker.height = 75
+        marker.width = 100
+        marker.height = 100
         marker.alpha = 0.8f                                                         //마커 투명도
         marker.zIndex = 10                                                          //마커 우선순위
         marker.map = naverMap

@@ -13,6 +13,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import com.myproject.safealarm.databinding.ActivityAlarmSetBinding
+import java.text.SimpleDateFormat
 import java.util.*
 
 class AlarmSetActivity : AppCompatActivity() {
@@ -87,10 +88,6 @@ class AlarmSetActivity : AppCompatActivity() {
 
         val cal = getCalendar(day, hour, minute, add)
 
-
-        Log.e("씨발", "${day} ${day+add}, ${hour}, ${minute}")
-        Log.e("알람1", cal.timeInMillis.toString())
-        Log.e("알람2", System.currentTimeMillis().toString())
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pIntent)
         App.prefs.alarmCount = 1
         Toast.makeText(this, "등록되었습니다.", Toast.LENGTH_SHORT).show()

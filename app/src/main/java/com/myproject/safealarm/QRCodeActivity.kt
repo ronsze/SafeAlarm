@@ -106,7 +106,7 @@ class QRCodeActivity : AppCompatActivity() {
 
     private fun sendR1(primeMsg: String){
         val primeNum = primeMsg.split("SiGn")[0]
-        if(checkSign(primeMsg)){
+        if(checkSign(primeMsg, getPublicKey())){
             val primeArr = primeNum.split(".")
             this.p = primeArr[0].toBigInteger()
             this.g = primeArr[1].toBigInteger()
@@ -129,7 +129,7 @@ class QRCodeActivity : AppCompatActivity() {
     private val onReceiveR2 = Emitter.Listener {
         val msg = it[0].toString()
         val r2 = msg.split("SiGn")[0].toBigInteger()
-        if(checkSign(msg)){
+        if(checkSign(msg, getPublicKey())){
             saveShardKey(r2, x)
             registGuard()
         }else{
