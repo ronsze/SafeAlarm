@@ -344,6 +344,7 @@ class ForegroundService : Service() {
                 if (locationManager != null) {
                     if(locG != null && locN != null){
                         location = getLocatioObject(locG, locN)
+                        providerStr = location.provider
                     }
                     if (location != null) {
                         val locTriple = getLocation(location)

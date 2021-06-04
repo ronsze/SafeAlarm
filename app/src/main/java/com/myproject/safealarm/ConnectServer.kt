@@ -54,6 +54,16 @@ interface APIInterface{
     @FormUrlEncoded
     @POST("/db/deleteInfo")
     fun delInfo(@Field("id")id: String): Call<ResponseInfo>
+
+    @FormUrlEncoded
+    @POST("/crl/revoke")
+    fun revokeCert(@Field("id")id: String): Call<ResponseInfo>
+
+    @GET("/crl/getCRL")
+    fun getCRL(): Call<ResponseDC>
+
+    @GET("/ca/getCaCert")
+    fun getCaCert(): Call<ResponseDC>
 }
 
 object Singleton{

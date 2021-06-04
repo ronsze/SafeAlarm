@@ -7,20 +7,31 @@ import android.location.Address
 import android.location.Geocoder
 import android.util.Log
 import com.google.android.gms.common.util.Base64Utils
-import okhttp3.OkHttpClient
 import java.io.*
 import java.lang.RuntimeException
 import java.security.*
-import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
+import java.security.cert.*
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
 import javax.crypto.Cipher
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
+
+fun checkValidify(certificate: X509Certificate, crl: X509CRL): Boolean{
+    try{
+        val sig = Signature.getInstance("SHA256withRSA").provider
+        certificate.verify(getCAPublicKey(), sig)
+        certificate.checkValidity()
+        if(crl.getRevokedCertificate(certificate) == null){
+            return true
+        }else{
+            Log.e("인증서 유효성 검사", "CRL에 포함된 인증서")
+            return false
+        }
+    }catch (e: Exception){
+        Log.e("인증서 유효성 검사", e.toString())
+        throw e
+    }
+}
 
 fun getSign(text: String): String{
     val hash = getHash(text)
@@ -45,9 +56,6 @@ fun checkSign(msg: String, publicKey: PublicKey): Boolean{
     val sign = msgArr[1]
     val textSign = Base64Utils.encode(getHash(originText))
     val originSign = rsaDecrypt(sign, publicKey)
-
-    Log.e("서명1", textSign)
-    Log.e("서명2", originSign)
 
     return textSign == originSign
 }
@@ -100,13 +108,13 @@ fun getCAPublicKey(): PublicKey{
     return public
 }
 
-fun saveCertificate(response: String, path: File?){
+fun saveCertificate(certificate: String, path: File?, crl: X509CRL){
     if(path != null){
         var tempFile = File(path, "certificate.crt")
         try{
             val writer = FileWriter(tempFile)
             val buffer = BufferedWriter(writer)
-            buffer.write(response)
+            buffer.write(certificate)
             buffer.close()
         }catch(e: java.lang.Exception){
             e.printStackTrace()
@@ -117,15 +125,45 @@ fun saveCertificate(response: String, path: File?){
         var ca = caIn.use{
             cf.generateCertificate(it) as X509Certificate
         }
+
         var kf = KeyFactory.getInstance("RSA")
         var public = kf.generatePublic(X509EncodedKeySpec(ca.publicKey.encoded))
 
-        if(checkCASign(ca.tbsCertificate, ca.signature, getCAPublicKey())){
-            App.prefs.publicKey = Base64Utils.encode(public.encoded)
-        }else{
-            Log.e("CA서명 검증", "실패")
+        try{
+            if(checkValidify(ca, crl)){
+                App.prefs.publicKey = Base64Utils.encode(public.encoded)
+            }
+        }catch (e: Exception){
+            Log.e("CRL유효성 검사", e.toString())
+            e.printStackTrace()
         }
     }
+}
+
+fun loadCRL(response: String?, path: File?): X509CRL{
+    var tempFile = File(path, "CRL.crl")
+    try{
+        val writer = FileWriter(tempFile)
+        val buffer = BufferedWriter(writer)
+        buffer.write(response)
+        buffer.close()
+    }catch(e: java.lang.Exception){
+        e.printStackTrace()
+    }
+
+    val cf = CertificateFactory.getInstance("X.509")
+    val crlIn = BufferedInputStream(FileInputStream(tempFile))
+    val crl = crlIn.use{
+        cf.generateCRL(it) as X509CRL
+    }
+
+    try{
+        crl.verify(getCAPublicKey())
+    }catch (e: Exception){
+        Log.e("CRL 서명 검증", "실패")
+    }
+
+    return crl
 }
 
 fun locationToText(context: Context): String{           //위도, 경도를 주소로 변경

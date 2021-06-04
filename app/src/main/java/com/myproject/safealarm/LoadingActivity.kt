@@ -30,6 +30,8 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
 import org.bouncycastle.util.io.pem.PemObject
 import java.io.*
+import java.net.URL
+import java.net.URLConnection
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.cert.CertificateFactory
@@ -50,31 +52,23 @@ class LoadingActivity : AppCompatActivity() {
         loadingDlog = LoadingDialog(this)
         loadingDlog.show()
         App.connectSocket()
-        getCACertificate()
-        checkPermission()
+
+        Singleton.server.getCaCert().enqueue(object: Callback<ResponseDC>{
+            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                val certificate = response.body()!!.result!!
+                saveCACertificate(certificate)
+                checkPermission()
+            }
+
+            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                Log.e("인증서", "CA인증서 받기 실패")
+            }
+
+        })
+
     }
 
-    private fun getCACertificate(){
-        var certificate = "-----BEGIN CERTIFICATE-----\n" +
-                "MIIDKTCCAhGgAwIBAgIBATANBgkqhkiG9w0BAQsFADA2MQswCQYDVQQGEwJrcjET\n" +
-                "MBEGA1UECgwKU3V3b25Vbml2LjESMBAGA1UEAwwJcm9vdGNhWVNZMB4XDTIxMDUy\n" +
-                "MjEyNDEwMVoXDTMxMDUyMDEyNDEwMVowNjELMAkGA1UEBhMCa3IxEzARBgNVBAoM\n" +
-                "ClN1d29uVW5pdi4xEjAQBgNVBAMMCXJvb3RjYVlTWTCCASIwDQYJKoZIhvcNAQEB\n" +
-                "BQADggEPADCCAQoCggEBALxlF0OhUyPiQ2iDxK510XQqktqWoNbdS8vHu0B4ZXlI\n" +
-                "v3O25S0MfA7TKQh0FT9F2qwvoP5VHK3MZP/L0aBk2O2PPlS7WUs59tuCE3aP8zci\n" +
-                "IKUCOU4kKQdZ2TTNWvn1Sh4+8peSa4mFY0yPnNzL1JRwfRscxl0GXPZ2rGPGx7oS\n" +
-                "eYWwns8kOKHMdXtrMWdoYDybwBK+Qfq5HEhRpSVi6kRZIgsDaSzm2lZblNGa9mSk\n" +
-                "fqJylrTAtscvjUwKUJM+uy+viZ0BBRP3IgeZm9wJP4aoh2eGBYQNP8c3KaqDJtZo\n" +
-                "wpZIaDdo3kpbjSFENBJAsZTDJGmVfHftymeXTnZidBECAwEAAaNCMEAwEgYDVR0T\n" +
-                "AQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQUv2QeVPfLh9E2hEUSAK53bEiBNcYwCwYD\n" +
-                "VR0PBAQDAgXgMA0GCSqGSIb3DQEBCwUAA4IBAQA7VIX7RhryXd6/H/kg5jocDLr6\n" +
-                "UruJ6VnFHuYG2DUs6nUB1iKV8m6Ebwm0AG6RZ1v6bF8gNn1u9GNf8UL93boxqetY\n" +
-                "AR7uKheys9JRql8EdZPcar1IYfId35HQ73pBvpE6FaXTGaZH9tyXiYnzzmVR4b69\n" +
-                "JR17VPJYMgfs9VOf04OQKRU67FDYAd6kQFl7HhY9B3j0W+ORtv7Ba9NHqjGHEY0U\n" +
-                "8k6s/cHcv/qFleva8IOXUVhgSZzHD2B4i0KulSQxflKq/xL3KSrv34yYomTbLPBu\n" +
-                "SWwcvBIrRXado49xx/cxZasoD/KLQmK0Pxr34nP/w22tvWsB6KSAixDxDLRI\n" +
-                "-----END CERTIFICATE-----"
-
+    private fun saveCACertificate(certificate: String){
         var tempFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "caCert.crt")
         try{
             val writer = FileWriter(tempFile)
@@ -92,6 +86,7 @@ class LoadingActivity : AppCompatActivity() {
         }
         var kf = KeyFactory.getInstance("RSA")
         var public = kf.generatePublic(X509EncodedKeySpec(ca.publicKey.encoded))
+
         App.prefs.CAPublic = Base64Utils.encode(public.encoded)
     }
 

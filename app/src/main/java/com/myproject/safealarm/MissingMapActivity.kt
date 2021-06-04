@@ -64,7 +64,6 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }else{
                     moveMaker(lat, lng)
                 }
-
             }
         }
     }
@@ -74,6 +73,8 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
         marker.icon = OverlayImage.fromResource(R.drawable.ic_baseline_place_24)    //마커 아이콘
         marker.alpha = 0.8f                                                         //마커 투명도
         marker.zIndex = 10                                                          //마커 우선순위
+        marker.width = 100
+        marker.height = 100
         marker.map = MissingMapActivity.naverMap
 
         val cameraPosition = CameraPosition(

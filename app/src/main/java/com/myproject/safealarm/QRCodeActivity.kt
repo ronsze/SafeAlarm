@@ -94,9 +94,19 @@ class QRCodeActivity : AppCompatActivity() {
         val primeMsg = msg[1]
         Singleton.server.getCert(remoteID).enqueue(object:Callback<ResponseDC>{
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-                saveCertificate(response.body()!!.result!!, path)
-                sendR1(primeMsg)
+                val certificate = response.body()!!.result!!
+
+                Singleton.server.getCRL().enqueue(object:Callback<ResponseDC>{
+                    override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                        val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                        val crl = loadCRL(response.body()!!.result!!, path)
+                        saveCertificate(certificate, path, crl)
+                        sendR1(primeMsg)
+                    }
+                    override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                        Log.e("인증서", "실패")
+                    }
+                })
             }
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.e("인증서", "실패")

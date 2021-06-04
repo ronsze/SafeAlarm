@@ -116,10 +116,21 @@ class RegistActivity : AppCompatActivity() {
     private val onCallbackPrime = Emitter.Listener {
         Singleton.server.getCert(this.remoteID).enqueue(object:Callback<ResponseDC>{
             override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-                val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-                saveCertificate(response.body()!!.result!!, path) //result = X509certificate
-                val primeNumber = it[0].toString()
-                sendPrime(primeNumber)
+                val certificate = response.body()!!.result!!
+
+                Singleton.server.getCRL().enqueue(object: Callback<ResponseDC>{
+                    override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
+                        val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                        val crl = loadCRL(response.body()!!.result!!, path)
+                        saveCertificate(certificate, path, crl) //result = X509certificate
+                        val primeNumber = it[0].toString()
+                        sendPrime(primeNumber)
+                    }
+
+                    override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
+                        Log.e("인증서", "실패")
+                    }
+                })
             }
             override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
                 Log.e("인증서", "실패")
