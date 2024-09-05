@@ -21,3 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "SafeAlarm"
 include(":app")
+include(":data")
+include(":domain")
