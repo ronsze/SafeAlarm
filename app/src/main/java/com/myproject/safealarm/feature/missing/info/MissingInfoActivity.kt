@@ -19,7 +19,6 @@ import com.myproject.safealarm.ResponseInfo
 import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.util.arrayListToBitmap
 import com.myproject.safealarm.databinding.ActivityMissingInfoBinding
-import com.myproject.safealarm.feature.loading.LoadingDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

@@ -10,16 +10,15 @@ import android.util.Log
 import android.widget.Toast
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
-import com.myproject.safealarm.Actions
+import com.myproject.safealarm.service.Actions
 import com.myproject.safealarm.App
-import com.myproject.safealarm.ForegroundService
-import com.myproject.safealarm.feature.loading.LoadingActivity
-import com.myproject.safealarm.feature.loading.LoadingDialog
+import com.myproject.safealarm.service.ForegroundService
+import com.myproject.safealarm.feature.splash.SplashFragment
 import com.myproject.safealarm.ResponseDC
 import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.util.checkSign
 import com.myproject.safealarm.databinding.ActivityQRCodeBinding
-import com.myproject.safealarm.feature.regist.RegistActivity
+import com.myproject.safealarm.feature.register.RegisterActivity
 import com.myproject.safealarm.util.getPublicKey
 import com.myproject.safealarm.util.getSign
 import com.myproject.safealarm.util.loadCRL
@@ -185,12 +184,12 @@ class QRCodeActivity : AppCompatActivity() {
     }
 
     fun moveActivity(){                     //액티비티 이동
-        startActivity(Intent(this, LoadingActivity::class.java))
+        startActivity(Intent(this, SplashFragment::class.java))
         finish()
     }
 
     fun backActivity(){
-        val intent = Intent(this, RegistActivity::class.java)
+        val intent = Intent(this, RegisterActivity::class.java)
         startActivity(intent)
         finish()
     }

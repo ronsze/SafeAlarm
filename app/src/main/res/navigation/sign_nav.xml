@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sign_nav"
+    app:startDestination="@id/onboardingFragment">
+
+    <fragment
+        android:id="@+id/onboardingFragment"
+        android:name="com.myproject.safealarm.feature.sign.onboarding.OnboardingFragment"
+        android:label="OnboardingFragment" >
+        <action
+            android:id="@+id/action_onboardingFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
+        <action
+            android:id="@+id/action_onboardingFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.myproject.safealarm.feature.sign.sign_up.SignUpFragment"
+        android:label="SignUpFragment" />
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.myproject.safealarm.feature.sign.login.LoginFragment"
+        android:label="LoginFragment" />
+
+</navigation>

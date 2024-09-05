@@ -8,12 +8,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.myproject.safealarm.feature.loading.LoadingActivity
+import com.myproject.safealarm.feature.splash.SplashFragment
+import com.myproject.safealarm.service.Actions
 
 object NotificationFile{
     const val CHANNEL_ID = "foreground_service_channel"
     fun createNotification(context: Context, msg: String): Notification{
-        val notificationIntent = Intent(context, LoadingActivity::class.java)
+        val notificationIntent = Intent(context, SplashFragment::class.java)
         notificationIntent.action = Actions.MAIN
         notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 

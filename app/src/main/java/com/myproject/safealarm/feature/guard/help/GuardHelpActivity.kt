@@ -8,7 +8,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.myproject.safealarm.App
-import com.myproject.safealarm.feature.loading.LoadingDialog
 import com.myproject.safealarm.ResponseDC
 import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.databinding.ActivityGuardHelpBinding

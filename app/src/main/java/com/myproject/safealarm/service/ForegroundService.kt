@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.service
 
 import android.Manifest
 import android.app.Service
@@ -16,6 +16,8 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.util.Base64Utils
+import com.myproject.safealarm.App
+import com.myproject.safealarm.NotificationFile
 import com.myproject.safealarm.util.checkSign
 import com.myproject.safealarm.util.getPublicKey
 import com.myproject.safealarm.util.getSign

@@ -7,7 +7,7 @@
     android:background="@color/white"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context=".feature.loading.LoadingActivity">
+    tools:context=".feature.splash.SplashFragment">
 
     <FrameLayout
         android:layout_width="match_parent"

@@ -1,4 +1,4 @@
-package com.myproject.safealarm.feature.regist
+package com.myproject.safealarm.feature.register
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -8,11 +8,10 @@ import android.util.Log
 import android.widget.Toast
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentResult
-import com.myproject.safealarm.Actions
+import com.myproject.safealarm.service.Actions
 import com.myproject.safealarm.App
-import com.myproject.safealarm.ForegroundService
-import com.myproject.safealarm.feature.loading.LoadingActivity
-import com.myproject.safealarm.feature.loading.LoadingDialog
+import com.myproject.safealarm.service.ForegroundService
+import com.myproject.safealarm.feature.splash.SplashFragment
 import com.myproject.safealarm.feature.qrcode.QRCodeActivity
 import com.myproject.safealarm.ResponseDC
 import com.myproject.safealarm.Singleton
@@ -31,7 +30,7 @@ import java.math.BigInteger
 import java.security.*
 import java.util.*
 
-class RegistActivity : AppCompatActivity() {
+class RegisterActivity : AppCompatActivity() {
     private val context = this
     private val mSocketR = App.mSocket
 
@@ -214,7 +213,7 @@ class RegistActivity : AppCompatActivity() {
     }
 
     fun moveLoadingActivity(){                     //액티비티 이동
-        startActivity(Intent(this, LoadingActivity::class.java))
+        startActivity(Intent(this, SplashFragment::class.java))
         finish()
     }
 

@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">SafeAlarm</string>
+
+    <string name="sign_up">회원가입</string>
+    <string name="login">로그인</string>
+
     <string name="title_activity_guard_map">GuardMapActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

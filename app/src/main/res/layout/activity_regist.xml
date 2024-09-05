@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#2B2B2B"
     android:orientation="vertical"
-    tools:context=".feature.regist.RegistActivity">
+    tools:context=".feature.register.RegisterActivity">
 
     <LinearLayout
         android:id="@+id/guard_layout"

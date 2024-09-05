@@ -13,7 +13,7 @@ import android.view.WindowManager
 import android.widget.*
 import com.myproject.safealarm.App
 import com.myproject.safealarm.R
-import com.myproject.safealarm.alarmManagerReceiver
+import com.myproject.safealarm.service.alarmManagerReceiver
 import com.myproject.safealarm.databinding.ActivityAlarmSetBinding
 import java.util.*
 
