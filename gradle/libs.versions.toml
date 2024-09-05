@@ -1,0 +1,58 @@
+[versions]
+agp = "8.3.2"
+kotlin = "1.9.24"
+hilt = "2.50"
+navigation = "2.7.7"
+room = "2.6.1"
+lifecycle = "2.8.3"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.13.1" }
+junit = { group = "junit", name = "junit", version = "4.13.2" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.2.1" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.6.1" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
+material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
+androidx-activity = { group = "androidx.activity", name = "activity-ktx", version = "1.9.0" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.1" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.1.4" }
+androidx-lifecycle = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+
+hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
+navigation-safeArgs = { group = "androidx.navigation", name = "navigation-safe-args-gradle-plugin", version.ref = "navigation" }
+
+circleImageView = { group = "de.hdodenhof", name = "circleimageview", version = "3.1.0" }
+
+mockk = { group = "io.mockk", name = "mockk", version = "1.13.11" }
+robolectric = { group = "org.robolectric", name = "robolectric", version = "4.12.2" }
+
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2024.06.00" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+compose-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-activity = { group = "androidx.activity", name = "activity-compose", version = "1.9.0" }
+compose-lifecycle = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+compose-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+compose-viewmodel-hilt = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
+
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+
+gson = { group = "com.google.code.gson", name = "gson", version = "2.11.0" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+
+[bundles]
+compose = ["compose-material3", "compose-ui", "compose-tooling", "compose-preview", "compose-activity", "compose-lifecycle", "compose-navigation", "compose-viewmodel-hilt"]
+room = ["room-runtime", "room-ktx"]
