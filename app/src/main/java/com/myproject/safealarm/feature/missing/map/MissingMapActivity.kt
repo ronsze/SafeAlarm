@@ -1,11 +1,11 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.missing.map
 
-import android.location.Address
-import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import com.myproject.safealarm.R
 import com.myproject.safealarm.databinding.ActivityMissingMapBinding
+import com.myproject.safealarm.util.textToLocation
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.MapView
@@ -13,7 +13,6 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
-import java.io.IOException
 import java.util.*
 
 class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -40,7 +39,7 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onMapReady(naverMap: NaverMap) {                                           //지도 최초 생성
-        MissingMapActivity.naverMap = naverMap
+        Companion.naverMap = naverMap
         naverMap.setMapType(NaverMap.MapType.Basic);                                    //지도 뒷 배경
         naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, true)      //건물 표시
 
@@ -48,7 +47,7 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
             LatLng(37.577, 126.976),                                                       //좌표
             13.0                                                                 //줌 레벨
         )
-        MissingMapActivity.naverMap.cameraPosition = cameraPosition
+        Companion.naverMap.cameraPosition = cameraPosition
         setLocation()
     }
 
@@ -75,12 +74,12 @@ class MissingMapActivity : AppCompatActivity(), OnMapReadyCallback {
         marker.zIndex = 10                                                          //마커 우선순위
         marker.width = 100
         marker.height = 100
-        marker.map = MissingMapActivity.naverMap
+        marker.map = naverMap
 
         val cameraPosition = CameraPosition(
             LatLng(lat, lng),                                   //좌표
             13.0                                                                 //줌 레벨
         )
-        MissingMapActivity.naverMap.cameraPosition = cameraPosition
+        naverMap.cameraPosition = cameraPosition
     }
 }

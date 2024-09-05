@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.guard.map
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,7 +7,10 @@ import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.myproject.safealarm.App
+import com.myproject.safealarm.R
 import com.myproject.safealarm.databinding.ActivityGuardMapBinding
+import com.myproject.safealarm.util.locationToText
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
 import com.naver.maps.map.overlay.ArrowheadPathOverlay
@@ -149,7 +152,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onMapReady(naverMap: NaverMap) {                                           //지도 최초 생성
-        GuardMapActivity.naverMap = naverMap
+        Companion.naverMap = naverMap
         naverMap.setMapType(NaverMap.MapType.Basic);                                        //지도 뒷 배경
         naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, true)          //건물 표시
 
@@ -157,7 +160,7 @@ class GuardMapActivity : AppCompatActivity(), OnMapReadyCallback {
             LatLng(sLat, sLng),                                                           //좌표
             15.0                                                                      //줌 레벨
         )
-        GuardMapActivity.naverMap.cameraPosition = cameraPosition
+        Companion.naverMap.cameraPosition = cameraPosition
         changePosition(sLat, sLng)                                                        //마커 위치 변경, 주소 변경
     }
 

@@ -1,24 +1,14 @@
 package com.myproject.safealarm
 
 import android.app.Application
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.location.Address
-import android.location.Geocoder
-import com.google.android.gms.common.util.Base64Utils
 import io.socket.client.IO
 import okhttp3.OkHttpClient
 import java.io.*
 import java.lang.RuntimeException
 import java.security.*
 import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.security.spec.PKCS8EncodedKeySpec
-import java.security.spec.X509EncodedKeySpec
 import java.util.*
-import javax.crypto.Cipher
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager

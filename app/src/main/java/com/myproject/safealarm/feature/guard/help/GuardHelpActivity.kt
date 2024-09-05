@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.guard.help
 
 import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
@@ -7,7 +7,12 @@ import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.myproject.safealarm.App
+import com.myproject.safealarm.feature.loading.LoadingDialog
+import com.myproject.safealarm.ResponseDC
+import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.databinding.ActivityGuardHelpBinding
+import com.myproject.safealarm.util.locationToText
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody

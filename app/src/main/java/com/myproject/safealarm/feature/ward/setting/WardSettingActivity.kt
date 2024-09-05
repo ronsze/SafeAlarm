@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.ward.setting
 
 import android.content.Context
 import android.content.DialogInterface
@@ -8,6 +8,7 @@ import android.text.InputType
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.myproject.safealarm.App
 import com.myproject.safealarm.databinding.ActivityWardSettingBinding
 
 class WardSettingActivity : AppCompatActivity() {

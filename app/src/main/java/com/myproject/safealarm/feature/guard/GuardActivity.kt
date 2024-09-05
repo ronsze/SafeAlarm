@@ -1,9 +1,13 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.guard
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.myproject.safealarm.feature.missing.info.MissingInfoActivity
 import com.myproject.safealarm.databinding.ActivityGuardBinding
+import com.myproject.safealarm.feature.guard.help.GuardHelpActivity
+import com.myproject.safealarm.feature.guard.map.GuardMapActivity
+import com.myproject.safealarm.feature.guard.setting.GuardSettingActivity
 
 class GuardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGuardBinding

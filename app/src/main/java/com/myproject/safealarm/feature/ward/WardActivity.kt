@@ -1,10 +1,13 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.ward
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.myproject.safealarm.databinding.ActivityGuardBinding
+import com.myproject.safealarm.Actions
+import com.myproject.safealarm.ForegroundService
+import com.myproject.safealarm.feature.missing.info.MissingInfoActivity
 import com.myproject.safealarm.databinding.ActivityWardBinding
+import com.myproject.safealarm.feature.ward.setting.WardSettingActivity
 
 class WardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWardBinding

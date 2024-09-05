@@ -1,22 +1,25 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.loading
 
 import android.Manifest
-import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
-import android.view.WindowManager
-import android.widget.Button
-import android.widget.Spinner
 import java.util.Random
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.util.Base64Utils
+import com.myproject.safealarm.App
+import com.myproject.safealarm.MyAddress
+import com.myproject.safealarm.R
+import com.myproject.safealarm.ResponseDC
+import com.myproject.safealarm.Singleton
+import com.myproject.safealarm.feature.guard.GuardActivity
+import com.myproject.safealarm.feature.regist.RegistActivity
+import com.myproject.safealarm.feature.ward.WardActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,14 +33,11 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
 import org.bouncycastle.util.io.pem.PemObject
 import java.io.*
-import java.net.URL
-import java.net.URLConnection
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.security.spec.X509EncodedKeySpec
-import kotlin.math.sign
 
 class LoadingActivity : AppCompatActivity() {
     private val context = this
@@ -108,9 +108,13 @@ class LoadingActivity : AppCompatActivity() {
         }else{
             if(ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])){
                 Toast.makeText(this, "앱을 실행하려면 위치 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS,
+                    MyAddress.PERMISSIONS_REQUEST_CODE
+                )
             }else{
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, MyAddress.PERMISSIONS_REQUEST_CODE)
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS,
+                    MyAddress.PERMISSIONS_REQUEST_CODE
+                )
             }
         }
     }

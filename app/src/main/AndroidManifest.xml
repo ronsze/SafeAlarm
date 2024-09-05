@@ -23,29 +23,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".MissingMapActivity"></activity>
-        <activity android:name=".EachInfoActivity" />
+        <activity android:name=".feature.missing.map.MissingMapActivity"></activity>
+        <activity android:name=".feature.guard.each_info.EachInfoActivity" />
         <activity android:name=".SetPassActivty" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
             tools:replace="screenOrientation" />
-        <activity android:name=".QRCodeActivity" />
+        <activity android:name=".feature.qrcode.QRCodeActivity" />
         <activity android:name=".AlarmAddActivity" />
         <activity android:name=".RangeAddActivity" />
-        <activity android:name=".AlarmSetActivity" />
+        <activity android:name=".feature.guard.alarm.AlarmSetActivity" />
         <activity
-            android:name=".WardInfoActivity"
+            android:name=".feature.ward.info.WardInfoActivity"
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".RangeSetActivity" />
-        <activity android:name=".MissingInfoActivity" />
-        <activity android:name=".WardSettingActivity" />
+        <activity android:name=".feature.missing.info.MissingInfoActivity" />
+        <activity android:name=".feature.ward.setting.WardSettingActivity" />
         <activity android:name=".WardHelpActivity" />
-        <activity android:name=".GuardSettingActivity" />
+        <activity android:name=".feature.guard.setting.GuardSettingActivity" />
         <activity
-            android:name=".GuardHelpActivity"
+            android:name=".feature.guard.help.GuardHelpActivity"
             android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".GuardMapActivity" />
+        <activity android:name=".feature.guard.map.GuardMapActivity" />
 
         <service
             android:name=".ForegroundService"
@@ -53,16 +53,16 @@
             android:exported="true"
             android:foregroundServiceType="location" />
 
-        <activity android:name=".LoadingActivity">
+        <activity android:name=".feature.loading.LoadingActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WardActivity" />
-        <activity android:name=".GuardActivity" />
-        <activity android:name=".RegistActivity" />
+        <activity android:name=".feature.ward.WardActivity" />
+        <activity android:name=".feature.guard.GuardActivity" />
+        <activity android:name=".feature.regist.RegistActivity" />
 
         <receiver android:name=".alarmManagerReceiver" />
 

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".EachInfoActivity">
+    tools:context=".feature.guard.each_info.EachInfoActivity">
 
     <ImageView
         android:id="@+id/photo"

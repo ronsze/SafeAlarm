@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.qrcode
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -8,10 +8,22 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
-import com.google.android.gms.common.util.Base64Utils
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
+import com.myproject.safealarm.Actions
+import com.myproject.safealarm.App
+import com.myproject.safealarm.ForegroundService
+import com.myproject.safealarm.feature.loading.LoadingActivity
+import com.myproject.safealarm.feature.loading.LoadingDialog
+import com.myproject.safealarm.ResponseDC
+import com.myproject.safealarm.Singleton
+import com.myproject.safealarm.util.checkSign
 import com.myproject.safealarm.databinding.ActivityQRCodeBinding
+import com.myproject.safealarm.feature.regist.RegistActivity
+import com.myproject.safealarm.util.getPublicKey
+import com.myproject.safealarm.util.getSign
+import com.myproject.safealarm.util.loadCRL
+import com.myproject.safealarm.util.saveCertificate
 import io.socket.emitter.Emitter
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,9 +31,6 @@ import retrofit2.Response
 import java.io.*
 import java.math.BigInteger
 import java.security.*
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.security.spec.X509EncodedKeySpec
 import java.util.*
 
 class QRCodeActivity : AppCompatActivity() {
@@ -122,7 +131,7 @@ class QRCodeActivity : AppCompatActivity() {
             this.g = primeArr[1].toBigInteger()
             this.x = getX()
             val r1 = g.modPow(x, p)
-            mSocketR.emit("sendR1", r1.toString()+getSign(r1.toString()))
+            mSocketR.emit("sendR1", r1.toString()+ getSign(r1.toString()))
         }else{
             Log.e("서명 sendR1", "서명 불일치")
         }

@@ -7,7 +7,7 @@
     android:background="@color/white"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context=".LoadingActivity">
+    tools:context=".feature.loading.LoadingActivity">
 
     <FrameLayout
         android:layout_width="match_parent"

@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.guard.alarm
 
 import android.app.AlarmManager
 import android.app.Dialog
@@ -8,12 +8,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
+import com.myproject.safealarm.App
+import com.myproject.safealarm.R
+import com.myproject.safealarm.alarmManagerReceiver
 import com.myproject.safealarm.databinding.ActivityAlarmSetBinding
-import java.text.SimpleDateFormat
 import java.util.*
 
 class AlarmSetActivity : AppCompatActivity() {
@@ -32,7 +33,7 @@ class AlarmSetActivity : AppCompatActivity() {
             val alarmDialog = AlarmCustomDialog(this)
             alarmDialog.show()
 
-            alarmDialog.setOnClickedListener(object: AlarmCustomDialog.ButtonClickListener{
+            alarmDialog.setOnClickedListener(object: AlarmCustomDialog.ButtonClickListener {
                 override fun onClicked(hour: String, minute: String) {
                     addAlarm(0, App.prefs.alarmCount, hour, minute)
                     onResume()

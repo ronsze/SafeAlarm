@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.util
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,6 +7,7 @@ import android.location.Address
 import android.location.Geocoder
 import android.util.Log
 import com.google.android.gms.common.util.Base64Utils
+import com.myproject.safealarm.App
 import java.io.*
 import java.lang.RuntimeException
 import java.security.*

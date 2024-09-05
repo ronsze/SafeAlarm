@@ -6,7 +6,7 @@
     android:background="#FFFFFF"
     android:backgroundTint="#FFFFFF"
     android:orientation="vertical"
-    tools:context=".GuardHelpActivity">
+    tools:context=".feature.guard.help.GuardHelpActivity">
 
     <TextView
         android:id="@+id/title"

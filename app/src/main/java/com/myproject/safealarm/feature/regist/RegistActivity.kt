@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.regist
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -6,10 +6,22 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
-import com.google.android.gms.common.util.Base64Utils
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentResult
+import com.myproject.safealarm.Actions
+import com.myproject.safealarm.App
+import com.myproject.safealarm.ForegroundService
+import com.myproject.safealarm.feature.loading.LoadingActivity
+import com.myproject.safealarm.feature.loading.LoadingDialog
+import com.myproject.safealarm.feature.qrcode.QRCodeActivity
+import com.myproject.safealarm.ResponseDC
+import com.myproject.safealarm.Singleton
+import com.myproject.safealarm.util.checkSign
 import com.myproject.safealarm.databinding.ActivityRegistBinding
+import com.myproject.safealarm.util.getPublicKey
+import com.myproject.safealarm.util.getSign
+import com.myproject.safealarm.util.loadCRL
+import com.myproject.safealarm.util.saveCertificate
 import io.socket.emitter.Emitter
 import retrofit2.Call
 import retrofit2.Callback
@@ -17,9 +29,6 @@ import retrofit2.Response
 import java.io.*
 import java.math.BigInteger
 import java.security.*
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.security.spec.X509EncodedKeySpec
 import java.util.*
 
 class RegistActivity : AppCompatActivity() {
@@ -143,7 +152,7 @@ class RegistActivity : AppCompatActivity() {
         val arr = primeNum.split(".")
         this.p = arr[0].toBigInteger()
         this.g = arr[1].toBigInteger()
-        mSocketR.emit("sendPrime", App.prefs.id+"9y6s0y9"+primeNum+getSign(primeNum))
+        mSocketR.emit("sendPrime", App.prefs.id+"9y6s0y9"+primeNum+ getSign(primeNum))
     }
 
     private val onReceiveR1 = Emitter.Listener {
@@ -178,7 +187,7 @@ class RegistActivity : AppCompatActivity() {
 
     private fun sendR2(y: BigInteger){
         val r2 = g.modPow(y, p)
-        mSocketR.emit("sendR2", r2.toString()+getSign(r2.toString()))
+        mSocketR.emit("sendR2", r2.toString()+ getSign(r2.toString()))
     }
 
     private fun registWard(){                  //피보호자 등록

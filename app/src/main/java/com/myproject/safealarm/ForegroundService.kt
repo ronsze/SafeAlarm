@@ -16,7 +16,9 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.util.Base64Utils
-import io.socket.client.IO
+import com.myproject.safealarm.util.checkSign
+import com.myproject.safealarm.util.getPublicKey
+import com.myproject.safealarm.util.getSign
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.coroutines.CoroutineScope
@@ -25,10 +27,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.RuntimeException
 import java.security.*
 import java.security.spec.PKCS8EncodedKeySpec
-import java.security.spec.X509EncodedKeySpec
 import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -469,7 +469,7 @@ class ForegroundService : Service() {
                     sendNoResponseMaxMsg()
                 }else{
                     val randomText = getRandomText(32).substring(0, 32)
-                    mSocket.emit("requestLoc", randomText+getSign(randomText))
+                    mSocket.emit("requestLoc", randomText+ getSign(randomText))
                     locationCount += 1
                 }
             }

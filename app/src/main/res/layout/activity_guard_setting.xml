@@ -7,7 +7,7 @@
     android:background="#232323"
     android:orientation="vertical"
     android:weightSum="10"
-    tools:context=".GuardSettingActivity">
+    tools:context=".feature.guard.setting.GuardSettingActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import com.myproject.safealarm.feature.loading.LoadingActivity
 
 object NotificationFile{
     const val CHANNEL_ID = "foreground_service_channel"

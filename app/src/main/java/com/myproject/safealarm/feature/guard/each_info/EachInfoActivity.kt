@@ -1,4 +1,4 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.guard.each_info
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import com.myproject.safealarm.databinding.ActivityEachInfoBinding
+import com.myproject.safealarm.feature.missing.map.MissingMapActivity
 import java.lang.Exception
 import java.lang.RuntimeException
 

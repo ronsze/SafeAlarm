@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#232323"
-    tools:context=".WardSettingActivity">
+    tools:context=".feature.ward.setting.WardSettingActivity">
 
     <TextView
         android:id="@+id/textView4"

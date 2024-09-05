@@ -1,9 +1,10 @@
-package com.myproject.safealarm
+package com.myproject.safealarm.feature.loading
 
 import android.app.Dialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.WindowManager
+import com.myproject.safealarm.R
 
 class LoadingDialog(val context: Context) {
     private val dialog = Dialog(context)
