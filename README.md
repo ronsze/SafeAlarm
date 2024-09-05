@@ -39,7 +39,6 @@ App에선 획득한 GPS위치를 토대로 몇 가지 기능을 통해 피보호
 
 <img src="https://user-images.githubusercontent.com/45475151/148100406-b1aa2fab-dc81-4e49-b127-33eb7f3f3796.png" width="300" height="300"/>
 <img src="https://user-images.githubusercontent.com/45475151/148100414-300d3750-c980-47d7-87c8-2c84871d5ac8.png" width="300" height="300"/>
-
 <img src="https://user-images.githubusercontent.com/45475151/148100428-76ae4656-5ade-45eb-b945-9f8da4423cdb.png" width="300" height="300"/><img src="https://user-images.githubusercontent.com/45475151/148100441-8293c3e4-4242-454e-b3d9-1f972aced346.png" width="300" height="300"/><img src="https://user-images.githubusercontent.com/45475151/148100448-57ba0aaa-2289-407e-b001-50bae352c09b.png" width="300" height="300"/>
 1) 지도상의 큰 지역을 일정한 크기를 가진 여러 개의 작은 Cell로 나눕니다.
 2) 피보호자가 움직인 이동 경로를 수집. (화살표대로 움직였다고 가정)
