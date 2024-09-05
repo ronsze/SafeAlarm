@@ -29,4 +29,5 @@ abstract class BaseFragment<V>: Fragment() {
     abstract fun Root()
 
     protected fun navigateTo(direction: NavDirections) = findNavController().navigate(direction)
+    protected fun popupBackStack() = findNavController().popBackStack()
 }

@@ -4,6 +4,16 @@
     <string name="sign_up">회원가입</string>
     <string name="login">로그인</string>
 
+    <string name="email">이메일</string>
+    <string name="password">비밀번호</string>
+    <string name="confirm_password">비밀번호 확인</string>
+
+    <string name="exists_email">이미 가입된 이메일입니다.</string>
+    <string name="password_not_matched">비밀번호가 일치하지 않습니다.</string>
+    <string name="wrong_email_or_password">이메일 또는 비밀번호가 틀렸습니다.</string>
+
+    <string name="confirm">확인</string>
+
     <string name="title_activity_guard_map">GuardMapActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

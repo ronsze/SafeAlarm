@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.myproject.safealarm.R
+import java.util.*
 
 object FontProvider {
     val robotoFamily = FontFamily(
@@ -66,3 +67,16 @@ fun BaseText(
         style = style
     )
 }
+
+fun defaultTextStyle(
+    color: Color,
+    fontSize: TextUnit,
+    weight: FontWeight = FontWeight.Normal,
+    textAlign: TextAlign = TextAlign.Unspecified
+) = TextStyle.Default.copy(
+    color = color,
+    fontSize = fontSize,
+    fontFamily = FontProvider.robotoFamily,
+    fontWeight = weight,
+    textAlign = textAlign
+)
