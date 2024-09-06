@@ -1,4 +1,4 @@
-package com.myproject.safealarm.feature.qrcode
+package com.myproject.safealarm.feature.role.ward
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -18,7 +18,7 @@ import com.myproject.safealarm.ResponseDC
 import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.util.checkSign
 import com.myproject.safealarm.databinding.ActivityQRCodeBinding
-import com.myproject.safealarm.feature.register.RegisterActivity
+import com.myproject.safealarm.feature.role.guard.RegisterActivity
 import com.myproject.safealarm.util.getPublicKey
 import com.myproject.safealarm.util.getSign
 import com.myproject.safealarm.util.loadCRL

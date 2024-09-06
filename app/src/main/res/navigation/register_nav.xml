@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/register_nav"
+    app:startDestination="@id/roleSelectFragment">
+
+    <fragment
+        android:id="@+id/roleSelectFragment"
+        android:name="com.myproject.safealarm.feature.role.RoleSelectFragment"
+        android:label="RoleSelectFragment">
+        <action
+            android:id="@+id/action_roleSelectFragment_to_guardRegisterFragment"
+            app:destination="@id/guardRegisterFragment" />
+        <action
+            android:id="@+id/action_roleSelectFragment_to_wardRegisterFragment"
+            app:destination="@id/wardRegisterFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/guardRegisterFragment"
+        android:name="com.myproject.safealarm.feature.role.guard.GuardRegisterFragment"
+        android:label="GuardRegisterFragment" />
+
+    <fragment
+        android:id="@+id/wardRegisterFragment"
+        android:name="com.myproject.safealarm.feature.role.ward.WardRegisterFragment"
+        android:label="WardRegisterFragment" />
+
+</navigation>

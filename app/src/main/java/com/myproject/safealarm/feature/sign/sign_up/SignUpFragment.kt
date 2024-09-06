@@ -38,6 +38,15 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
 
     @Composable
     override fun Root() {
+        val uiState by fragmentViewModel.uiState.collectAsStateWithLifecycle()
+        when (uiState) {
+            SignUpViewModel.SignUpUiState.View -> View()
+            SignUpViewModel.SignUpUiState.Signed -> navigateToRoleSelect()
+        }
+    }
+
+    @Composable
+    private fun View() {
         Column {
             BaseToolbar(
                 frontComposable = BaseToolbarDefaults.defaultToolbarPainter(
@@ -137,4 +146,6 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
             fragmentViewModel.resetConfirmPasswordError()
         }
     }
+
+    private fun navigateToRoleSelect() = navigateTo(SignUpFragmentDirections.actionSignUpFragmentToSplashNav())
 }

@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/onboardingFragment"
         android:name="com.myproject.safealarm.feature.sign.onboarding.OnboardingFragment"
-        android:label="OnboardingFragment" >
+        android:label="OnboardingFragment">
         <action
             android:id="@+id/action_onboardingFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
@@ -19,11 +19,26 @@
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.myproject.safealarm.feature.sign.sign_up.SignUpFragment"
-        android:label="SignUpFragment" />
+        android:label="SignUpFragment">
+        <action
+            android:id="@+id/action_signUpFragment_to_splash_nav"
+            app:destination="@id/register_nav"
+            app:popUpTo="@navigation/splash_nav"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.myproject.safealarm.feature.sign.login.LoginFragment"
-        android:label="LoginFragment" />
+        android:label="LoginFragment">
+        <action
+            android:id="@+id/action_loginFragment_to_splash_nav"
+            app:destination="@id/splash_nav"
+            app:popUpTo="@navigation/splash_nav"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <include app:graph="@navigation/splash_nav" />
+    <include app:graph="@navigation/register_nav" />
 
 </navigation>

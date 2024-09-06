@@ -5,9 +5,6 @@
     android:id="@+id/main_nav"
     app:startDestination="@id/splashFragment">
 
-    <fragment
-        android:id="@+id/splashFragment"
-        android:name="com.myproject.safealarm.feature.splash.SplashFragment"
-        android:label="splash_fragment"/>
+
 
 </navigation>

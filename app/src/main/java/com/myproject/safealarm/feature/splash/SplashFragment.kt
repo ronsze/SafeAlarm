@@ -39,7 +39,8 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
         val uiState by fragmentViewModel.uiState.collectAsStateWithLifecycle()
         when (uiState) {
             SplashViewModel.SplashUiState.Loading -> checkPermission()
-            SplashViewModel.SplashUiState.LoggedIn -> navigateToRoleView()
+            SplashViewModel.SplashUiState.Connected-> navigateToMain()
+            SplashViewModel.SplashUiState.RoleSelect -> navigateToRoleSelect()
             SplashViewModel.SplashUiState.LoggedOut -> navigateToOnboarding()
         }
 
@@ -82,18 +83,9 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
         permissionRequestLauncher.launch(REQUIRED_PERMISSIONS)
     }
 
-    private fun navigateToRoleView() {
-//        if(App.prefs.role == "Guard"){
-//            startActivity(Intent(this, GuardActivity::class.java))
-//        }else{
-//            startActivity(Intent(this, WardActivity::class.java))
-//        }
-//        finish()
-    }
-
-    private fun navigateToOnboarding() {
-
-    }
+    private fun navigateToMain() = navigateTo(SplashFragmentDirections.actionSplashFragmentToSignNav())
+    private fun navigateToOnboarding() = navigateTo(SplashFragmentDirections.actionSplashFragmentToSignNav())
+    private fun navigateToRoleSelect() = navigateTo(SplashFragmentDirections.actionSplashFragmentToRegisterNav())
 
     @Preview
     @Composable

@@ -64,4 +64,7 @@ dependencies {
 
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.bundles.firebase)
 }

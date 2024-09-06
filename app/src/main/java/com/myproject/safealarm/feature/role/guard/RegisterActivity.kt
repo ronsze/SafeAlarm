@@ -1,4 +1,4 @@
-package com.myproject.safealarm.feature.register
+package com.myproject.safealarm.feature.role.guard
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -12,7 +12,7 @@ import com.myproject.safealarm.service.Actions
 import com.myproject.safealarm.App
 import com.myproject.safealarm.service.ForegroundService
 import com.myproject.safealarm.feature.splash.SplashFragment
-import com.myproject.safealarm.feature.qrcode.QRCodeActivity
+import com.myproject.safealarm.feature.role.ward.QRCodeActivity
 import com.myproject.safealarm.ResponseDC
 import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.util.checkSign

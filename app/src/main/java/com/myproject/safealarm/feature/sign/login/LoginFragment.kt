@@ -38,6 +38,15 @@ class LoginFragment: BaseFragment<LoginViewModel>() {
 
     @Composable
     override fun Root() {
+        val uiState by fragmentViewModel.uiState.collectAsStateWithLifecycle()
+        when (uiState) {
+            LoginViewModel.LoginUiState.View -> View()
+            LoginViewModel.LoginUiState.LoggedIn -> navigateToSplash()
+        }
+    }
+
+    @Composable
+    private fun View() {
         Column {
             BaseToolbar(
                 frontComposable = BaseToolbarDefaults.defaultToolbarPainter(
@@ -114,4 +123,6 @@ class LoginFragment: BaseFragment<LoginViewModel>() {
             fragmentViewModel.resetPasswordError()
         }
     }
+
+    private fun navigateToSplash() = navigateTo(LoginFragmentDirections.actionLoginFragmentToSplashNav())
 }

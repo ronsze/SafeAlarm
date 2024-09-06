@@ -36,8 +36,7 @@ class SplashViewModel @Inject constructor(
             onSuccess = { profile ->
                 when {
                     profile.partnerId != null -> checkConnection()
-                    profile.role != null -> _uiState.set(SplashUiState.NeedConnection)
-                    profile.role == null -> _uiState.set(SplashUiState.RoleSelect)
+                    else -> _uiState.set(SplashUiState.RoleSelect)
                 }
             },
             onFailure = {
@@ -136,7 +135,6 @@ class SplashViewModel @Inject constructor(
     sealed interface SplashUiState {
         data object Loading: SplashUiState
         data object Connected: SplashUiState
-        data object NeedConnection: SplashUiState
         data object RoleSelect: SplashUiState
         data object LoggedOut: SplashUiState
     }
