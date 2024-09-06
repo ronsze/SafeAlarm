@@ -2,17 +2,19 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.gmsServices)
     id("kotlin-kapt")
     id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
-    compileSdk = 34
     namespace = "com.myproject.safealarm"
+    compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.myproject.safealarm"
+        minSdk = 24
         targetSdk = 34
+
         versionCode = 2
         versionName = "2.0"
     }
@@ -42,6 +44,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
