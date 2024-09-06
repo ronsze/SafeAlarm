@@ -1,4 +1,4 @@
-package kr.sdbk.data.module
+package com.myproject.safealarm.di
 
 import dagger.Module
 import dagger.Provides

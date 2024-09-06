@@ -1,4 +1,4 @@
-package kr.sdbk.data.module
+package kr.sdbk.data.di
 
 import dagger.Module
 import dagger.Provides
