@@ -1,10 +1,12 @@
 package kr.sdbk.domain.usecase.user_auth
 
-import kr.sdbk.domain.model.User
+import kotlinx.coroutines.CoroutineScope
+import kr.sdbk.domain.model.user.User
 
 interface GetUserUseCase {
-    suspend operator fun invoke(
+    operator fun invoke(
         refreshToken: Boolean = false,
+        scope: CoroutineScope,
         onSuccess: (User?) -> Unit,
         onFailure: (Throwable) -> Unit
     )

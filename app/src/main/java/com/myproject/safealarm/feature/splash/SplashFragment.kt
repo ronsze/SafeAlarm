@@ -19,8 +19,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myproject.safealarm.R
 import com.myproject.safealarm.base.BaseFragment
 import com.myproject.safealarm.ui.composable.BaseText
+import dagger.hilt.android.AndroidEntryPoint
 import kotlin.system.exitProcess
 
+@AndroidEntryPoint
 class SplashFragment : BaseFragment<SplashViewModel>() {
     companion object {
         private val REQUIRED_PERMISSIONS = arrayOf(

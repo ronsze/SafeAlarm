@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "888579872675",
+    "project_id": "safeme-2a80f",
+    "storage_bucket": "safeme-2a80f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:888579872675:android:183bd0357c867ebd0d6c16",
+        "android_client_info": {
+          "package_name": "com.myproject.safealarm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyw3bk8ycgEgVd13q2QpH_MPN9I7WCrLg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

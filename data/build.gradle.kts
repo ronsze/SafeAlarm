@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.gmsServices)
     id("kotlin-kapt")
 }
 
@@ -49,5 +48,7 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
+    implementation(libs.bundles.firebase)
+
+    implementation(libs.gson)
 }

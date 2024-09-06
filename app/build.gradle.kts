@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.gmsServices)
     id("kotlin-kapt")
     id("androidx.navigation.safeargs.kotlin")
 }
