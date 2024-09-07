@@ -1,4 +1,4 @@
-package com.myproject.safealarm.feature.ward.info
+package com.myproject.safealarm.feature.guard.info
 
 import android.content.Intent
 import android.graphics.Bitmap

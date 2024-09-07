@@ -21,6 +21,14 @@
     <string name="cancelled">취소되었습니다.</string>
     <string name="wrong_qrcode">잘못된 QR코드입니다.</string>
 
+    <string name="check_location">위치 확인</string>
+    <string name="missing_register">실종 등록</string>
+    <string name="missing_info">실종 정보</string>
+    <string name="alarm_register">알람 등록</string>
+    <string name="setting">설정</string>
+
+    <string name="help">도움 요청</string>
+
     <string name="title_activity_guard_map">GuardMapActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

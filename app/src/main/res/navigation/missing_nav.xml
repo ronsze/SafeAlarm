@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/missing_nav"
+    app:startDestination="@id/missingInfoFragment">
+
+    <fragment
+        android:id="@+id/missingInfoFragment"
+        android:name="com.myproject.safealarm.feature.missing.info.MissingInfoFragment"
+        android:label="MissingInfoFragment" >
+        <action
+            android:id="@+id/action_missingInfoFragment_to_eachInfoFragment"
+            app:destination="@id/eachInfoFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/eachInfoFragment"
+        android:name="com.myproject.safealarm.feature.missing.each_info.EachInfoFragment"
+        android:label="EachInfoFragment" >
+        <action
+            android:id="@+id/action_eachInfoFragment_to_missingMapFragment"
+            app:destination="@id/missingMapFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/missingMapFragment"
+        android:name="com.myproject.safealarm.feature.missing.map.MissingMapFragment"
+        android:label="MissingMapFragment" />
+
+</navigation>

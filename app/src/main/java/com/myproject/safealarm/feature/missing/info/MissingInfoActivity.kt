@@ -13,7 +13,7 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.google.gson.internal.LinkedTreeMap
-import com.myproject.safealarm.feature.guard.each_info.EachInfoActivity
+import com.myproject.safealarm.feature.missing.each_info.EachInfoActivity
 import com.myproject.safealarm.R
 import com.myproject.safealarm.ResponseInfo
 import com.myproject.safealarm.Singleton

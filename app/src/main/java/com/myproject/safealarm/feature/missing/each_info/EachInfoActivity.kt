@@ -1,4 +1,4 @@
-package com.myproject.safealarm.feature.guard.each_info
+package com.myproject.safealarm.feature.missing.each_info
 
 import android.content.Intent
 import android.graphics.Bitmap

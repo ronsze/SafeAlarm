@@ -10,7 +10,7 @@ import com.myproject.safealarm.feature.guard.alarm.AlarmSetActivity
 import com.myproject.safealarm.App
 import com.myproject.safealarm.ResponseInfo
 import com.myproject.safealarm.Singleton
-import com.myproject.safealarm.feature.ward.info.WardInfoActivity
+import com.myproject.safealarm.feature.guard.info.WardInfoActivity
 import com.myproject.safealarm.databinding.ActivityGuardSettingBinding
 import retrofit2.Call
 import retrofit2.Callback

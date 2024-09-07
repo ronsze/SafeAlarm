@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/guard_setting"
+    app:startDestination="@id/guardSettingFragment">
+
+    <fragment
+        android:id="@+id/guardSettingFragment"
+        android:name="com.myproject.safealarm.feature.guard.setting.GuardSettingFragment"
+        android:label="GuardSettingFragment" >
+        <action
+            android:id="@+id/action_guardSettingFragment_to_wardInfoFragment"
+            app:destination="@id/wardInfoFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/wardInfoFragment"
+        android:name="com.myproject.safealarm.feature.guard.info.WardInfoFragment"
+        android:label="WardInfoFragment"/>
+
+</navigation>

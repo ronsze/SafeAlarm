@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/guard_nav"
+    app:startDestination="@id/guardFragment">
+
+    <fragment
+        android:id="@+id/guardFragment"
+        android:name="com.myproject.safealarm.feature.guard.GuardFragment"
+        android:label="GuardFragment">
+        <action
+            android:id="@+id/action_guardFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_guardFragment_to_alarmFragment"
+            app:destination="@id/alarmFragment" />
+        <action
+            android:id="@+id/action_guardFragment_to_helpFragment"
+            app:destination="@id/helpFragment" />
+        <action
+            android:id="@+id/action_guardFragment_to_missing_nav"
+            app:destination="@id/missing_nav" />
+        <action
+            android:id="@+id/action_guardFragment_to_guard_setting"
+            app:destination="@id/guard_setting" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.myproject.safealarm.feature.guard.map.MapFragment"
+        android:label="MapFragment" />
+
+    <fragment
+        android:id="@+id/helpFragment"
+        android:name="com.myproject.safealarm.feature.guard.help.HelpFragment"
+        android:label="HelpFragment" />
+
+    <fragment
+        android:id="@+id/alarmFragment"
+        android:name="com.myproject.safealarm.feature.guard.alarm.AlarmFragment"
+        android:label="AlarmFragment" />
+
+    <include app:graph="@navigation/missing_nav" />
+    <include app:graph="@navigation/guard_setting_nav" />
+
+</navigation>
