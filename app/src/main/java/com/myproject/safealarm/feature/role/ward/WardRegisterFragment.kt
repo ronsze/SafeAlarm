@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -17,6 +18,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.myproject.safealarm.R
 import com.myproject.safealarm.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -40,6 +42,7 @@ class WardRegisterFragment: BaseFragment<WardRegisterViewModel>() {
             WardRegisterViewModel.WardRegisterUiState.Loading -> LoadingView()
             is WardRegisterViewModel.WardRegisterUiState.Loaded -> View(uid = uiState.uid)
             WardRegisterViewModel.WardRegisterUiState.Failed -> Unit
+            WardRegisterViewModel.WardRegisterUiState.Connected -> Unit
         }
     }
 
@@ -47,7 +50,17 @@ class WardRegisterFragment: BaseFragment<WardRegisterViewModel>() {
     private fun View(
         uid: String
     ) {
-        val qrCodeBitmap by remember { mutableStateOf(BarcodeEncoder().encodeBitmap(uid, BarcodeFormat.QR_CODE, 400, 400)) }
+        val appName = stringResource(id = R.string.app_name)
+        val qrCodeBitmap by remember {
+            mutableStateOf(
+                BarcodeEncoder().encodeBitmap(
+                    "$appName $uid",
+                    BarcodeFormat.QR_CODE,
+                    400,
+                    400
+                )
+            )
+        }
 
         Box {
             Image(

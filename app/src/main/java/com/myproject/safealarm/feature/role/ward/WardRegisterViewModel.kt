@@ -112,5 +112,6 @@ class WardRegisterViewModel @Inject constructor(
         data object Loading: WardRegisterUiState
         data class Loaded(val uid: String): WardRegisterUiState
         data object Failed: WardRegisterUiState
+        data object Connected: WardRegisterUiState
     }
 }
