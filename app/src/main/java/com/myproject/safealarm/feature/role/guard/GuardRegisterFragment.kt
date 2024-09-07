@@ -20,11 +20,11 @@ class GuardRegisterFragment: BaseFragment<GuardRegisterViewModel>() {
     ) { result ->
         val appName = getString(R.string.app_name)
         if (result.contents == null) {
-            scanFailed(getString(R.string.cancelled))
+            onFailed(getString(R.string.cancelled))
         } else {
             val contents = result.contents.split(" ")
             if (contents[0] != appName) {
-                scanFailed(getString(R.string.wrong_qrcode))
+                onFailed(getString(R.string.wrong_qrcode))
             } else {
 //                fragmentViewModel.startDHExchange(result.contents)
                 fragmentViewModel.connect()
@@ -52,7 +52,7 @@ class GuardRegisterFragment: BaseFragment<GuardRegisterViewModel>() {
         scannerLauncher.launch(scanOptions)
     }
 
-    private fun scanFailed(message: String) {
+    private fun onFailed(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         popupBackStack()
     }
