@@ -12,7 +12,6 @@ import com.myproject.safealarm.service.Actions
 import com.myproject.safealarm.App
 import com.myproject.safealarm.service.ForegroundService
 import com.myproject.safealarm.feature.splash.SplashFragment
-import com.myproject.safealarm.feature.role.ward.QRCodeActivity
 import com.myproject.safealarm.ResponseDC
 import com.myproject.safealarm.Singleton
 import com.myproject.safealarm.util.checkSign

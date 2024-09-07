@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -74,7 +77,7 @@ object BaseToolbarDefaults {
 
     @Composable
     fun defaultToolbarPainter(
-        icon: ImageVector,
+        icon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
         size: Size = Size(24f, 24f),
         onClick: () -> Unit = {}
     ): @Composable () -> Unit = {
