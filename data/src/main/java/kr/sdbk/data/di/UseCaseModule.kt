@@ -10,12 +10,14 @@ import kr.sdbk.data.usecase.user_auth.GetUserUseCaseImpl
 import kr.sdbk.data.usecase.user_service.DeleteWardInfoUseCaseImpl
 import kr.sdbk.data.usecase.user_service.GetUserProfileUseCaseImpl
 import kr.sdbk.data.usecase.user_service.GetWardInfoUseCaseImpl
+import kr.sdbk.data.usecase.user_service.PostMissingUseCaseImpl
 import kr.sdbk.data.usecase.user_service.UpdateUserProfileUseCaseImpl
 import kr.sdbk.data.usecase.user_service.UpdateWardInfoUseCaseImpl
 import kr.sdbk.domain.usecase.user_auth.GetUserUseCase
 import kr.sdbk.domain.usecase.user_service.DeleteWardInfoUseCase
 import kr.sdbk.domain.usecase.user_service.GetUserProfileUseCase
 import kr.sdbk.domain.usecase.user_service.GetWardInfoUseCase
+import kr.sdbk.domain.usecase.user_service.PostMissingUseCase
 import kr.sdbk.domain.usecase.user_service.UpdateUserProfileUseCase
 import kr.sdbk.domain.usecase.user_service.UpdateWardInfoUseCase
 import javax.inject.Singleton
@@ -41,4 +43,7 @@ class UseCaseModule {
     @Provides
     @Singleton
     fun providesDeleteWardInfoUseCase(repository: UserServiceRepository): DeleteWardInfoUseCase = DeleteWardInfoUseCaseImpl(repository)
+    @Provides
+    @Singleton
+    fun providesPostMissingUseCase(repository: UserServiceRepository): PostMissingUseCase = PostMissingUseCaseImpl(repository)
 }

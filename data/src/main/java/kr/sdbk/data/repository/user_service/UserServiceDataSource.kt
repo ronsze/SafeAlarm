@@ -3,12 +3,14 @@ package kr.sdbk.data.repository.user_service
 import android.net.Uri
 import androidx.core.net.toUri
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kr.sdbk.data.dto.MissingInfoDTO
 import kr.sdbk.data.dto.UserProfileDTO
 import kr.sdbk.data.dto.WardInfoDTO
 
@@ -16,6 +18,7 @@ class UserServiceDataSource: UserServiceRepository {
     companion object {
         private const val PROFILE_DOCUMENT = "profile"
         private const val WARD_INFO_DOCUMENT = "ward_info"
+        private const val MISSING_TABLE = "missing"
     }
     private val firestore = Firebase.firestore
 
@@ -80,6 +83,19 @@ class UserServiceDataSource: UserServiceRepository {
             firestore.collection(WARD_INFO_DOCUMENT)
                 .document(uid)
                 .delete()
+                .await()
+        } ?: throw Exception("Invalid user")
+    }
+
+    override suspend fun postMissing(missingInfo: MissingInfoDTO) {
+        val uid = Firebase.auth.currentUser?.uid
+        val database = Firebase.database.reference
+
+        uid?.run {
+            database
+                .child(MISSING_TABLE)
+                .child(uid)
+                .setValue(missingInfo)
                 .await()
         } ?: throw Exception("Invalid user")
     }

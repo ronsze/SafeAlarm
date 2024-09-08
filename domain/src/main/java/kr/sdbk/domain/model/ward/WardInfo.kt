@@ -8,6 +8,5 @@ data class WardInfo(
     val gender: Gender,
     val height: String,
     val age: String,
-    val guardNumber: String,
-    val signalment: String
+    val guardNumber: String
 )

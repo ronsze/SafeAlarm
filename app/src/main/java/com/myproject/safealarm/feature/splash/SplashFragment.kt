@@ -74,7 +74,7 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
         if (isGranted) {
             fragmentViewModel.checkUser()
         } else {
-            Toast.makeText(requireContext(), "권한 설정이 거부되었습니다.\n앱을 사용하시려면 권한을 허용해주세요.", Toast.LENGTH_SHORT).show()
+            toast(getString(R.string.permissions_denied))
             exitProcess(0)
         }
     }

@@ -1,8 +1,10 @@
 package com.myproject.safealarm.ui.composable
 
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextLayoutResult
@@ -80,3 +82,31 @@ fun defaultTextStyle(
     fontWeight = weight,
     textAlign = textAlign
 )
+
+@Composable
+fun HintTextField(
+    hint: String,
+    text: MutableState<String>,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier
+) {
+    BasicTextField(
+        value = text.value,
+        onValueChange = { text.value = it },
+        textStyle = TextStyle.Default.copy(
+            color = Color.Black,
+            fontSize = fontSize
+        ),
+        modifier = modifier
+    ) {
+        if (text.value.isEmpty()) {
+            BaseText(
+                text = hint,
+                color = Color.LightGray,
+                fontSize = fontSize
+            )
+        } else {
+            it()
+        }
+    }
+}

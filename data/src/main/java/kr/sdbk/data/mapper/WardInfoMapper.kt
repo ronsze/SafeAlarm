@@ -12,8 +12,7 @@ object WardInfoMapper {
         gender = gender.name,
         height = height,
         age = age,
-        guardNumber = guardNumber,
-        signalment = signalment
+        guardNumber = guardNumber
     )
 
     fun WardInfoDTO.toData() = WardInfo(
@@ -22,7 +21,6 @@ object WardInfoMapper {
         gender = Gender.valueOf(gender),
         height = height,
         age = age,
-        guardNumber = guardNumber,
-        signalment = signalment
+        guardNumber = guardNumber
     )
 }

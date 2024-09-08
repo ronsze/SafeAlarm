@@ -9,13 +9,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenuItem
@@ -30,10 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
@@ -48,6 +43,7 @@ import com.myproject.safealarm.base.BaseFragment
 import com.myproject.safealarm.ui.composable.BaseText
 import com.myproject.safealarm.ui.composable.BaseToolbar
 import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
+import com.myproject.safealarm.ui.composable.HintTextField
 import kr.sdbk.domain.model.Gender
 import kr.sdbk.domain.model.ward.WardInfo
 
@@ -87,7 +83,6 @@ class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
             val height = remember { mutableStateOf(info?.height ?: "") }
             val age = remember { mutableStateOf(info?.age ?: "") }
             val guardNumber = remember { mutableStateOf(info?.guardNumber ?: "") }
-            val signalment = remember { mutableStateOf(info?.signalment ?: "") }
 
             val photoResultLauncher = registerForActivityResult(
                 ActivityResultContracts.StartActivityForResult()
@@ -115,12 +110,11 @@ class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
                                     gender = gender.value,
                                     height = height.value,
                                     age = age.value,
-                                    guardNumber = guardNumber.value,
-                                    signalment = signalment.value
+                                    guardNumber = guardNumber.value
                                 )
                             )
                         } else {
-                            Toast.makeText(requireContext(), getString(R.string.please_enter_every_info), Toast.LENGTH_SHORT).show()
+                            toast(getString(R.string.please_enter_every_info))
                         }
                     }
                 )
@@ -129,7 +123,7 @@ class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .height(350.dp)
             ) {
                 GlideImage(
                     model = imageUri,
@@ -141,41 +135,32 @@ class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
                 )
             }
 
-            InputBox(
+            HintTextField(
                 hint = stringResource(id = R.string.name),
                 text = name,
                 fontSize = 19.sp
             )
             Spacer(modifier = Modifier.height(5.dp))
 
-            Row {
-                GenderField(
-                    gender = gender,
-                    modifier = Modifier.weight(1f)
-                )
+            GenderField(
+                gender = gender,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.height(5.dp))
 
-                InputBox(
-                    hint = stringResource(id = R.string.height),
-                    text = height,
-                    fontSize = 14.sp,
-                    modifier = Modifier.weight(1f)
-                )
+            HintTextField(
+                hint = stringResource(id = R.string.height),
+                text = height,
+                fontSize = 14.sp,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.height(5.dp))
 
-                InputBox(
-                    hint = stringResource(id = R.string.age),
-                    text = age,
-                    fontSize = 14.sp,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            
-            InputBox(
-                hint = stringResource(id = R.string.signalment),
-                text = signalment,
-                fontSize = 15.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
+            HintTextField(
+                hint = stringResource(id = R.string.age),
+                text = age,
+                fontSize = 14.sp,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -219,34 +204,6 @@ class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
     private fun getGenderText(gender: Gender) = when (gender) {
         Gender.MALE -> R.string.male
         Gender.FEMALE -> R.string.female
-    }
-
-    @Composable
-    private fun InputBox(
-        hint: String,
-        text: MutableState<String>,
-        fontSize: TextUnit,
-        modifier: Modifier = Modifier
-    ) {
-        BasicTextField(
-            value = text.value,
-            onValueChange = { text.value = it },
-            textStyle = TextStyle.Default.copy(
-                color = Color.Black,
-                fontSize = fontSize
-            ),
-            modifier = modifier
-        ) {
-            if (text.value.isEmpty()) {
-                BaseText(
-                    text = hint,
-                    color = Color.LightGray,
-                    fontSize = fontSize
-                )
-            } else {
-                it()
-            }
-        }
     }
 
     private fun takePhoto(launcher: ActivityResultLauncher<Intent>) {

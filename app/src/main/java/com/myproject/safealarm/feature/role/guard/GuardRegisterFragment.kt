@@ -53,7 +53,7 @@ class GuardRegisterFragment: BaseFragment<GuardRegisterViewModel>() {
     }
 
     private fun onFailed(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        toast(message)
         popupBackStack()
     }
 }

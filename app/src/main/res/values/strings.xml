@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">SafeAlarm</string>
 
+    <string name="permissions_denied">"권한 설정이 거부되었습니다.\n앱을 사용하시려면 권한을 허용해주세요."</string>
+
     <string name="sign_up">회원가입</string>
     <string name="login">로그인</string>
 
@@ -46,6 +48,15 @@
     <string name="female">여자</string>
 
     <string name="please_enter_every_info">기타 특징 외에 모든 정보를 입력해주세요.</string>
+
+    <string name="post_missing">실종자 정보 게시</string>
+
+    <string name="missing_time">실종 시점</string>
+    <string name="last_location">마지막 위치</string>
+    <string name="extra">기타 사항</string>
+
+    <string name="ward_info_load_failed">피보호자 정보를 받아오지 못했습니다.\n등록하지 않았다면 정보를 등록해주세요.</string>
+    <string name="registered">등록되었습니다.</string>
 
     <string name="title_activity_guard_map">GuardMapActivity</string>
     <!-- Strings used for fragments for navigation -->

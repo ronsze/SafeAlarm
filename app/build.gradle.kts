@@ -70,4 +70,5 @@ dependencies {
 
     implementation(libs.zxing)
     implementation(libs.glide)
+    implementation(libs.naver.maps)
 }

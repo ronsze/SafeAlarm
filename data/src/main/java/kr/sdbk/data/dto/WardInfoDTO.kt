@@ -20,8 +20,5 @@ data class WardInfoDTO(
     val age: String,
 
     @SerializedName("guard_number")
-    val guardNumber: String,
-
-    @SerializedName("signalment")
-    val signalment: String
+    val guardNumber: String
 )

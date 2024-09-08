@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,4 +55,8 @@ abstract class BaseFragment<V>: Fragment() {
 
     protected fun navigateTo(direction: NavDirections) = findNavController().navigate(direction)
     protected fun popupBackStack() = findNavController().popBackStack()
+
+    protected fun toast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
 }

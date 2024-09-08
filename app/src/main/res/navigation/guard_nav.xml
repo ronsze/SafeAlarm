@@ -32,7 +32,7 @@
 
     <fragment
         android:id="@+id/helpFragment"
-        android:name="com.myproject.safealarm.feature.guard.help.HelpFragment"
+        android:name="com.myproject.safealarm.feature.guard.help.GuardHelpFragment"
         android:label="HelpFragment" />
 
     <fragment
