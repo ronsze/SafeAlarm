@@ -50,7 +50,6 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
         Column {
             BaseToolbar(
                 frontComposable = BaseToolbarDefaults.defaultToolbarPainter(
-                    icon = Icons.Filled.Close,
                     onClick = this@SignUpFragment::popupBackStack
                 )
             )

@@ -50,7 +50,6 @@ class LoginFragment: BaseFragment<LoginViewModel>() {
         Column {
             BaseToolbar(
                 frontComposable = BaseToolbarDefaults.defaultToolbarPainter(
-                    icon = Icons.Filled.Close,
                     onClick = this@LoginFragment::popupBackStack
                 )
             )

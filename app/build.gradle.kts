@@ -69,4 +69,5 @@ dependencies {
     implementation(libs.bundles.firebase)
 
     implementation(libs.zxing)
+    implementation(libs.glide)
 }
