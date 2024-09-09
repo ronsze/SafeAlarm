@@ -3,8 +3,10 @@ package com.myproject.safealarm.feature.splash
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -61,20 +64,24 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
 
     @Composable
     private fun View() {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Box {
             Image(
                 painter = painterResource(id = R.drawable.load_img),
                 contentDescription = "",
                 modifier = Modifier
                     .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .padding(horizontal = 25.dp)
+                    .align(Alignment.Center)
             )
 
             BaseText(
                 text = "SafeMe",
                 fontSize = 70.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 35.dp)
             )
         }
     }
