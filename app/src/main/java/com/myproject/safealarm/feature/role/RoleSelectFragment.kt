@@ -38,6 +38,7 @@ import com.myproject.safealarm.ui.composable.BaseToolbar
 import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
 import com.myproject.safealarm.ui.composable.BasicButton
 import com.myproject.safealarm.ui.composable.noRippleClickable
+import com.myproject.safealarm.ui.theme.Purple
 import com.myproject.safealarm.ui.theme.SkyBlue
 import kr.sdbk.domain.model.user.UserRole
 
@@ -94,7 +95,7 @@ class RoleSelectFragment: BaseFragment<RoleSelectViewModel>() {
         isSelected: Boolean,
         onClick: () -> Unit
     ) {
-        val borderColor = if (isSelected) SkyBlue else Color.LightGray
+        val borderColor = if (isSelected) Purple else Color.LightGray
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
