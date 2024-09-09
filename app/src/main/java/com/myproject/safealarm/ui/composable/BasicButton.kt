@@ -29,7 +29,7 @@ fun BasicButton(
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
-            .height(45.dp)
+            .height(55.dp)
     ) {
         BaseText(
             text = text,
