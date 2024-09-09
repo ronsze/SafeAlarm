@@ -10,13 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.myproject.safealarm.ui.theme.Purple
 import com.myproject.safealarm.ui.theme.SkyBlue
 
 @Composable
 fun BasicButton(
     text: String,
     color: ButtonColors = ButtonDefaults.buttonColors(
-        containerColor = SkyBlue
+        containerColor = Purple
     ),
     enabled: Boolean = true,
     modifier: Modifier = Modifier,

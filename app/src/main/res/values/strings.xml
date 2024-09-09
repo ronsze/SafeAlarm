@@ -19,8 +19,10 @@
 
     <string name="guard">보호자</string>
     <string name="ward">피보호자</string>
+    <string name="please_select_role">두 유저가 서로 다른 역할을 선택해야합니다.</string>
 
     <string name="please_scan_ward_qrcode">피보호자 화면의 QR코드를 스캔해주세요.</string>
+    <string name="please_scan_qrcode">QR코드를 보호자가 스캔하도록 해주세요.</string>
     <string name="cancelled">취소되었습니다.</string>
     <string name="wrong_qrcode">잘못된 QR코드입니다.</string>
 

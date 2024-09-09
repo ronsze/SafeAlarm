@@ -57,7 +57,10 @@ abstract class BaseFragment<V>: Fragment() {
     }
 
     protected fun navigateTo(direction: NavDirections) = findNavController().navigate(direction)
-    protected fun popupBackStack() = findNavController().popBackStack()
+    protected fun popupBackStack() {
+        if (findNavController().currentBackStackEntry == null) requireActivity().finish()
+        else findNavController().popBackStack()
+    }
 
     protected fun NaverMap.moveCamera(latLng: LatLng, zoom: Double = 13.0) {
         val cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, zoom)

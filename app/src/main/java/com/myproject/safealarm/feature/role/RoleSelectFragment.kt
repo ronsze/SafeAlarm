@@ -48,17 +48,18 @@ class RoleSelectFragment: BaseFragment<RoleSelectViewModel>() {
     @Composable
     override fun Root() {
         Column {
-            BaseToolbar(
-                frontComposable = BaseToolbarDefaults.defaultToolbarPainter(
-                    onClick = this@RoleSelectFragment::popupBackStack
-                )
-            )
             Spacer(modifier = Modifier.height(40.dp))
 
             var selectedRole by remember { mutableStateOf(UserRole.GUARD) }
             Column(
                 modifier = Modifier.padding(horizontal = 20.dp)
             ) {
+                BaseText(
+                    text = stringResource(id = R.string.please_select_role),
+                    fontSize = 24.sp
+                )
+                Spacer(modifier = Modifier.height(40.dp))
+
                 RoleCard(
                     image = R.drawable.guard_img,
                     text = R.string.guard,

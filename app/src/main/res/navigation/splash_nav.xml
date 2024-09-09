@@ -19,11 +19,15 @@
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
         <action
-            android:id="@+id/action_splashFragment_to_ward_nav"
-            app:destination="@id/ward_nav" />
-        <action
             android:id="@+id/action_splashFragment_to_guard_nav"
-            app:destination="@id/guard_nav" />
+            app:destination="@id/guard_nav"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_ward_nav"
+            app:destination="@id/ward_nav"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <include app:graph="@navigation/sign_nav" />
