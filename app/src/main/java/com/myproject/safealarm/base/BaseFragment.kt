@@ -19,6 +19,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.myproject.safealarm.R
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraUpdate
+import com.naver.maps.map.NaverMap
 
 abstract class BaseFragment<V>: Fragment() {
     abstract val fragmentViewModel: V
@@ -55,6 +58,11 @@ abstract class BaseFragment<V>: Fragment() {
 
     protected fun navigateTo(direction: NavDirections) = findNavController().navigate(direction)
     protected fun popupBackStack() = findNavController().popBackStack()
+
+    protected fun NaverMap.moveCamera(latLng: LatLng, zoom: Double = 13.0) {
+        val cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, zoom)
+        moveCamera(cameraUpdate)
+    }
 
     protected fun toast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

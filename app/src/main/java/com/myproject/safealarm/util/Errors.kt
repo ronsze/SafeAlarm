@@ -1,1 +1,0 @@
-package com.myproject.safealarm.util
