@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -55,38 +56,41 @@ class LoginFragment: BaseFragment<LoginViewModel>() {
                     onClick = this@LoginFragment::popupBackStack
                 )
             )
-            Spacer(modifier = Modifier.height(24.dp))
 
-            BaseText(
-                text = stringResource(id = R.string.login),
-                fontSize = 35.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val email = remember { mutableStateOf("") }
-            val password = remember { mutableStateOf("") }
-            val confirmButtonEnabled by remember(email, password) {
-                derivedStateOf {
-                    val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
-                    val isPasswordValid = password.value.length >= 8
-                    isEmailValid && isPasswordValid
-                }
-            }
-
-            InputLayer(
-                email = email,
-                password = password
-            )
-            Spacer(modifier = Modifier.weight(1f))
-
-            BasicButton(
-                text = stringResource(id = R.string.confirm),
-                enabled = confirmButtonEnabled
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp)
             ) {
-                fragmentViewModel.login(email.value, password.value)
+                BaseText(
+                    text = stringResource(id = R.string.login),
+                    fontSize = 35.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                val email = remember { mutableStateOf("") }
+                val password = remember { mutableStateOf("") }
+                val confirmButtonEnabled by remember(email, password) {
+                    derivedStateOf {
+                        val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
+                        val isPasswordValid = password.value.length >= 8
+                        isEmailValid && isPasswordValid
+                    }
+                }
+
+                InputLayer(
+                    email = email,
+                    password = password
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                BasicButton(
+                    text = stringResource(id = R.string.confirm),
+                    enabled = confirmButtonEnabled
+                ) {
+                    fragmentViewModel.login(email.value, password.value)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
@@ -99,6 +103,7 @@ class LoginFragment: BaseFragment<LoginViewModel>() {
 
         PlaceHolderTextField(
             text = email.value,
+            fontSize = 16.sp,
             placeholder = stringResource(id = R.string.email),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier
@@ -106,10 +111,11 @@ class LoginFragment: BaseFragment<LoginViewModel>() {
         ) {
             email.value = it
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         PlaceHolderTextField(
             text = password.value,
+            fontSize = 16.sp,
             placeholder = stringResource(id = R.string.password),
             error = when (passwordError) {
                 LoginViewModel.PasswordError.None -> ""

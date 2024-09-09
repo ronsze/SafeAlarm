@@ -1,9 +1,12 @@
 package com.myproject.safealarm.feature.sign.onboarding
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -11,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,9 +33,17 @@ class OnboardingFragment: BaseFragment<BaseViewModel>() {
     @Composable
     override fun Root() {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(horizontal = 25.dp)
         ) {
-            Spacer(modifier = Modifier.weight(1f))
+            Image(
+                painter = painterResource(id = R.drawable.ic_bath),
+                contentDescription = "",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
 
             NavigateButton(
                 text = stringResource(id = R.string.sign_up),

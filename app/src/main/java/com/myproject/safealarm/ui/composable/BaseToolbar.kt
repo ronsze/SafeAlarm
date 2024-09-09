@@ -36,7 +36,7 @@ fun BaseToolbar(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp)
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 15.dp)
     ) {
         frontComposable()
         titleComposable()

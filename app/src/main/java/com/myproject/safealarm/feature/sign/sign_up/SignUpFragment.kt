@@ -5,9 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
@@ -55,41 +54,44 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
                     onClick = this@SignUpFragment::popupBackStack
                 )
             )
-            Spacer(modifier = Modifier.height(24.dp))
 
-            BaseText(
-                text = stringResource(id = R.string.login),
-                fontSize = 35.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val email = remember { mutableStateOf("") }
-            val password = remember { mutableStateOf("") }
-            val confirmPassword = remember { mutableStateOf("") }
-            val confirmButtonEnabled by remember(email, password) {
-                derivedStateOf {
-                    val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
-                    val isPasswordValid = password.value.length >= 8
-                    val isConfirmPasswordValid = confirmPassword.value.length >= 8
-                    isEmailValid && isPasswordValid && isConfirmPasswordValid
-                }
-            }
-
-            InputLayer(
-                email = email,
-                password = password,
-                confirmPassword = confirmPassword
-            )
-            Spacer(modifier = Modifier.weight(1f))
-
-            BasicButton(
-                text = stringResource(id = R.string.confirm),
-                enabled = confirmButtonEnabled
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp)
             ) {
-                fragmentViewModel.signUp(email.value, password.value, confirmPassword.value)
+                BaseText(
+                    text = stringResource(id = R.string.sign_up),
+                    fontSize = 35.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                val email = remember { mutableStateOf("") }
+                val password = remember { mutableStateOf("") }
+                val confirmPassword = remember { mutableStateOf("") }
+                val confirmButtonEnabled by remember(email, password) {
+                    derivedStateOf {
+                        val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
+                        val isPasswordValid = password.value.length >= 8
+                        val isConfirmPasswordValid = confirmPassword.value.length >= 8
+                        isEmailValid && isPasswordValid && isConfirmPasswordValid
+                    }
+                }
+
+                InputLayer(
+                    email = email,
+                    password = password,
+                    confirmPassword = confirmPassword
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                BasicButton(
+                    text = stringResource(id = R.string.confirm),
+                    enabled = confirmButtonEnabled
+                ) {
+                    fragmentViewModel.signUp(email.value, password.value, confirmPassword.value)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
@@ -104,6 +106,7 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
 
         PlaceHolderTextField(
             text = email.value,
+            fontSize = 16.sp,
             placeholder = stringResource(id = R.string.email),
             error = when (emailError) {
                 SignUpViewModel.EmailError.None -> ""
@@ -116,10 +119,11 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
             email.value = it
             fragmentViewModel.resetEmailError()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         PlaceHolderTextField(
             text = password.value,
+            fontSize = 16.sp,
             placeholder = stringResource(id = R.string.password),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = { TransformedText(AnnotatedString("●".repeat(password.value.length)), OffsetMapping.Identity) },
@@ -129,10 +133,11 @@ class SignUpFragment: BaseFragment<SignUpViewModel>() {
             password.value = it
             fragmentViewModel.resetConfirmPasswordError()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         PlaceHolderTextField(
             text = confirmPassword.value,
+            fontSize = 16.sp,
             placeholder = stringResource(id = R.string.confirm_password),
             error = when (confirmPasswordError) {
                 SignUpViewModel.PasswordError.None -> ""

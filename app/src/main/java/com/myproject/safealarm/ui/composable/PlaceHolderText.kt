@@ -107,7 +107,7 @@ fun PlaceHolderTextField(
             val placeholderColor = if (onError) colors.errorPlaceholderColor else if (!isFocused) colors.disablePlaceholderColor else colors.placeholderColor
             BaseText(
                 text = placeholder,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = placeholderColor
             )
             Spacer(modifier = Modifier.height(3.dp))

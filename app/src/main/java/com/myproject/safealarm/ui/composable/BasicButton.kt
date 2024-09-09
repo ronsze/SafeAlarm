@@ -22,6 +22,7 @@ fun BasicButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val textColor = if (enabled) Color.White else Color.Black
     Button(
         colors = color,
         onClick = onClick,
@@ -33,7 +34,7 @@ fun BasicButton(
         BaseText(
             text = text,
             fontSize = 16.sp,
-            color = Color.White
+            color = textColor
         )
     }
 }
