@@ -6,6 +6,7 @@ import com.naver.maps.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kr.sdbk.domain.model.ward.Location
 import kr.sdbk.domain.model.ward.MissingInfo
 import kr.sdbk.domain.model.ward.WardInfo
 import kr.sdbk.domain.usecase.user_service.GetWardInfoUseCase
@@ -41,10 +42,15 @@ class GuardHelpViewModel @Inject constructor(
         signalment: String,
         extra: String
     ) {
+        val lastLocationLatLng = getLastWardLocation()
         _uiState.set(GuardHelpUiState.Loading)
         val missingInfo = MissingInfo(
             missingTime = missingTime,
-            lastLocation = lastLocation,
+            lastLocation = Location(
+                latitude = lastLocationLatLng.latitude,
+                longitude = lastLocationLatLng.longitude,
+                text = lastLocation
+            ),
             signalment = signalment,
             extra = extra,
             wardInfo = wardInfo

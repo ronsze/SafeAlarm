@@ -25,9 +25,16 @@
             android:id="@+id/action_eachInfoFragment_to_missingMapFragment"
             app:destination="@id/missingMapFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/missingMapFragment"
         android:name="com.myproject.safealarm.feature.missing.map.MissingMapFragment"
-        android:label="MissingMapFragment" />
+        android:label="MissingMapFragment">
+
+        <argument
+            android:name="lastLocation"
+            app:argType="com.naver.maps.geometry.LatLng"/>
+
+    </fragment>
 
 </navigation>
