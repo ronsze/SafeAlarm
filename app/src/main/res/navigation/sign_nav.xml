@@ -34,11 +34,10 @@
         <action
             android:id="@+id/action_loginFragment_to_splash_nav"
             app:destination="@id/splash_nav"
-            app:popUpTo="@navigation/splash_nav"
+            app:popUpTo="@id/onboardingFragment"
             app:popUpToInclusive="true" />
     </fragment>
 
-    <include app:graph="@navigation/splash_nav" />
     <include app:graph="@navigation/register_nav" />
 
 </navigation>

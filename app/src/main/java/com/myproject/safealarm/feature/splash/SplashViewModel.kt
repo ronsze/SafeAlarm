@@ -5,6 +5,7 @@ import com.myproject.safealarm.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kr.sdbk.domain.model.user.UserRole
 import kr.sdbk.domain.usecase.user_auth.GetUserUseCase
 import kr.sdbk.domain.usecase.user_service.GetUserProfileUseCase
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class SplashViewModel @Inject constructor(
     }
 
     private fun checkConnection() {
-        _uiState.set(SplashUiState.Connected)
+        _uiState.set(SplashUiState.Connected(UserRole.GUARD))
     }
 
 //    private fun saveCACertificate(certificate: String){
@@ -134,7 +135,7 @@ class SplashViewModel @Inject constructor(
 
     sealed interface SplashUiState {
         data object Loading: SplashUiState
-        data object Connected: SplashUiState
+        data class Connected(val role: UserRole): SplashUiState
         data object RoleSelect: SplashUiState
         data object LoggedOut: SplashUiState
     }

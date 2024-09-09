@@ -1,13 +1,12 @@
 package com.myproject.safealarm.feature.splash
 
 import android.Manifest
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -15,11 +14,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myproject.safealarm.R
 import com.myproject.safealarm.base.BaseFragment
 import com.myproject.safealarm.ui.composable.BaseText
 import dagger.hilt.android.AndroidEntryPoint
+import kr.sdbk.domain.model.user.UserRole
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -36,10 +39,19 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
 
     @Composable
     override fun Root() {
-        val uiState by fragmentViewModel.uiState.collectAsStateWithLifecycle()
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(key1 = lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_CREATE) checkPermission()
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+
+        val uiState = fragmentViewModel.uiState.collectAsStateWithLifecycle().value
         when (uiState) {
-            SplashViewModel.SplashUiState.Loading -> checkPermission()
-            SplashViewModel.SplashUiState.Connected-> navigateToMain()
+            SplashViewModel.SplashUiState.Loading -> Unit
+            is SplashViewModel.SplashUiState.Connected-> navigateToMain(uiState.role)
             SplashViewModel.SplashUiState.RoleSelect -> navigateToRoleSelect()
             SplashViewModel.SplashUiState.LoggedOut -> navigateToOnboarding()
         }
@@ -70,8 +82,8 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
     private val permissionRequestLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val isGranted = permissions.all { it.value }
-        if (isGranted) {
+        val isDenied = permissions.any { !it.value }
+        if (isDenied) {
             fragmentViewModel.checkUser()
         } else {
             toast(getString(R.string.permissions_denied))
@@ -83,7 +95,10 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
         permissionRequestLauncher.launch(REQUIRED_PERMISSIONS)
     }
 
-    private fun navigateToMain() = navigateTo(SplashFragmentDirections.actionSplashFragmentToSignNav())
+    private fun navigateToMain(role: UserRole) = when (role) {
+        UserRole.GUARD -> navigateTo(SplashFragmentDirections.actionSplashFragmentToGuardNav())
+        UserRole.WARD -> navigateTo(SplashFragmentDirections.actionSplashFragmentToWardNav())
+    }
     private fun navigateToOnboarding() = navigateTo(SplashFragmentDirections.actionSplashFragmentToSignNav())
     private fun navigateToRoleSelect() = navigateTo(SplashFragmentDirections.actionSplashFragmentToRegisterNav())
 

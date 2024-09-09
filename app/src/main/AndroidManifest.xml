@@ -31,7 +31,8 @@
             android:foregroundServiceType="location"
             tools:ignore="ForegroundServicePermission" />
 
-        <activity android:name=".feature.main.MainActivity"
+        <activity
+            android:name=".feature.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

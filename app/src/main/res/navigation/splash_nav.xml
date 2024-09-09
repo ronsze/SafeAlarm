@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/splashFragment"
         android:name="com.myproject.safealarm.feature.splash.SplashFragment"
-        android:label="splash_fragment">
+        android:label="SplashFragment">
         <action
             android:id="@+id/action_splashFragment_to_sign_nav"
             app:destination="@id/sign_nav"
@@ -18,9 +18,17 @@
             app:destination="@id/register_nav"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_ward_nav"
+            app:destination="@id/ward_nav" />
+        <action
+            android:id="@+id/action_splashFragment_to_guard_nav"
+            app:destination="@id/guard_nav" />
     </fragment>
 
     <include app:graph="@navigation/sign_nav" />
     <include app:graph="@navigation/register_nav" />
+    <include app:graph="@navigation/guard_nav" />
+    <include app:graph="@navigation/ward_nav" />
 
 </navigation>

@@ -46,6 +46,8 @@ class MissingInfoFragment: BaseFragment<MissingInfoViewModel>() {
             lifecycleOwner.lifecycle.addObserver(observer)
             onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
         }
+
+        View()
     }
     
     @Composable
