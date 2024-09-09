@@ -44,15 +44,12 @@
     <string name="guard_number">보호자 연락처</string>
     <string name="signalment">인상착의</string>
 
-    <string name="height">신장</string>
-
     <string name="male">남자</string>
     <string name="female">여자</string>
 
     <string name="please_enter_every_info">기타 특징 외에 모든 정보를 입력해주세요.</string>
 
     <string name="post_missing">실종자 정보 게시</string>
-    <string name="missing_info">실종자 정보</string>
     <string name="missing_detail">상세 정보</string>
 
     <string name="missing_time">실종 시점</string>
