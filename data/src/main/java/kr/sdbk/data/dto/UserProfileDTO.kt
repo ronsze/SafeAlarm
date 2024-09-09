@@ -7,8 +7,8 @@ data class UserProfileDTO(
     val uid: String,
 
     @SerializedName("partner_id")
-    val partnerId: String?,
+    val partnerId: String? = null,
 
     @SerializedName("role")
-    val role: String?
+    val role: String? = null
 )

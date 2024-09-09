@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.sdbk.data.mapper.UserMapper.toData
-import kr.sdbk.data.mapper.UserMapper.toUser
 import kr.sdbk.data.repository.user_service.UserServiceRepository
 import kr.sdbk.domain.model.user.UserProfile
 import kr.sdbk.domain.usecase.user_service.GetUserProfileUseCase

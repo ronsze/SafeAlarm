@@ -1,6 +1,7 @@
 package kr.sdbk.data.repository.user_service
 
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toUri
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
@@ -30,13 +31,13 @@ class UserServiceDataSource: UserServiceRepository {
     }
 
     override suspend fun getUserProfile(): UserProfileDTO {
-        val uid = Firebase.auth.currentUser?.uid
-        return uid?.run {
+        return Firebase.auth.currentUser?.uid?.run {
+            Log.e("Error", "1")
             firestore.collection(PROFILE_DOCUMENT)
-                .document(uid)
+                .document(this)
                 .get()
                 .await()
-                .toObject(UserProfileDTO::class.java)
+                .toObject(UserProfileDTO::class.java) ?: UserProfileDTO(this)
         } ?: throw Exception("Invalid user")
     }
 
