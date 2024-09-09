@@ -4,9 +4,10 @@ import com.myproject.safealarm.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
 
 @HiltViewModel
-class GuardRegisterViewModel: BaseViewModel() {
+class GuardRegisterViewModel @Inject constructor(): BaseViewModel() {
     private val _uiState: MutableStateFlow<GuardRegisterUiState> = MutableStateFlow(GuardRegisterUiState.QRScanning)
     val uiState get() = _uiState.asStateFlow()
 

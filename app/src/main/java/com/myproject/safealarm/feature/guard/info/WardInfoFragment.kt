@@ -45,9 +45,11 @@ import com.myproject.safealarm.ui.composable.BaseToolbar
 import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
 import com.myproject.safealarm.ui.composable.HintTextField
 import com.myproject.safealarm.util.getGenderText
+import dagger.hilt.android.AndroidEntryPoint
 import kr.sdbk.domain.model.Gender
 import kr.sdbk.domain.model.ward.WardInfo
 
+@AndroidEntryPoint
 class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
     override val fragmentViewModel: WardInfoViewModel by viewModels()
 

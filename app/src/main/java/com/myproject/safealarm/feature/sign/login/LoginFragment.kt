@@ -32,7 +32,9 @@ import com.myproject.safealarm.ui.composable.BaseToolbar
 import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
 import com.myproject.safealarm.ui.composable.BasicButton
 import com.myproject.safealarm.ui.composable.PlaceHolderTextField
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginFragment: BaseFragment<LoginViewModel>() {
     override val fragmentViewModel: LoginViewModel by viewModels()
 

@@ -28,8 +28,10 @@ import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
 import com.myproject.safealarm.ui.composable.BasicButton
 import com.myproject.safealarm.ui.composable.HintTextField
 import com.myproject.safealarm.util.locationToText
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class GuardHelpFragment: BaseFragment<GuardHelpViewModel>() {
     override val fragmentViewModel: GuardHelpViewModel by viewModels()
 

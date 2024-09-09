@@ -14,8 +14,10 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MapFragment: BaseFragment<MapViewModel>(), OnMapReadyCallback {
     override val fragmentViewModel: MapViewModel by viewModels()
     private lateinit var naverMap: NaverMap

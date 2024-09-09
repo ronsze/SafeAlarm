@@ -1,5 +1,6 @@
 package com.myproject.safealarm.feature.missing.info
 
+import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,14 @@ class MissingInfoViewModel @Inject constructor(
     val missingList get() = _missingList.asStateFlow()
 
     fun loadData() {
+        getMissingListUseCase(
+            scope = viewModelScope,
+            onSuccess = {
+                _missingList.set(it)
+            },
+            onFailure = {
 
+            }
+        )
     }
 }

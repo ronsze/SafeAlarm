@@ -1,6 +1,5 @@
 package com.myproject.safealarm.feature.role.guard
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -9,7 +8,6 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.myproject.safealarm.R
 import com.myproject.safealarm.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
-
 
 @AndroidEntryPoint
 class GuardRegisterFragment: BaseFragment<GuardRegisterViewModel>() {

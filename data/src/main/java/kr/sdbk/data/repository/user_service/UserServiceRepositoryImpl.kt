@@ -6,8 +6,9 @@ import kr.sdbk.data.dto.WardInfoDTO
 import kr.sdbk.domain.model.user.UserProfile
 import kr.sdbk.domain.model.ward.MissingInfo
 import kr.sdbk.domain.model.ward.WardInfo
+import javax.inject.Inject
 
-class UserServiceRepositoryImpl(
+class UserServiceRepositoryImpl @Inject constructor(
     private val dataSource: UserServiceDataSource
 ): UserServiceRepository {
     override suspend fun updateUserProfile(profile: UserProfileDTO) = dataSource.updateUserProfile(profile)

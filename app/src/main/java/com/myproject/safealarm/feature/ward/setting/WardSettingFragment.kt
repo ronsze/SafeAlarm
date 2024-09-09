@@ -23,8 +23,10 @@ import com.myproject.safealarm.base.BaseFragment
 import com.myproject.safealarm.ui.composable.BaseText
 import com.myproject.safealarm.ui.composable.BaseToolbar
 import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
+import dagger.hilt.android.AndroidEntryPoint
 import kr.sdbk.domain.model.BasicDialogState
 
+@AndroidEntryPoint
 class WardSettingFragment: BaseFragment<WardSettingViewModel>() {
     override val fragmentViewModel: WardSettingViewModel by viewModels()
 

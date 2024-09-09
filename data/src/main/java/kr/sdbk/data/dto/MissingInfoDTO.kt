@@ -7,7 +7,7 @@ data class MissingInfoDTO(
     val missingTime: String,
 
     @SerializedName("last_location")
-    val lastLocation: String,
+    val lastLocation: LocationDTO,
 
     @SerializedName("signalment")
     val signalment: String,
