@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat
 import com.myproject.safealarm.feature.splash.SplashFragment
 import com.myproject.safealarm.service.Actions
 
-object NotificationFile{
+object NotificationFile {
     const val CHANNEL_ID = "foreground_service_channel"
     fun createNotification(context: Context, msg: String): Notification{
         val notificationIntent = Intent(context, SplashFragment::class.java)

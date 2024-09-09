@@ -22,13 +22,17 @@ class MissingMapFragment: BaseFragment<MissingMapViewModel>(), OnMapReadyCallbac
     @Composable
     override fun Root() {
         AndroidView(factory = {
-            mapView = MapView(it)
+            mapView = MapView(it).apply {
+                getMapAsync(this@MissingMapFragment)
+            }
             mapView
         })
     }
 
     override fun onMapReady(map: NaverMap) {
         naverMap = map
+        naverMap.mapType = NaverMap.MapType.Basic
+        naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, true)
 
         val lastLocation = LatLng(args.lastLocation.latitude, args.lastLocation.longitude)
 
