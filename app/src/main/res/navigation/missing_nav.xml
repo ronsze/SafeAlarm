@@ -17,6 +17,10 @@
         android:id="@+id/eachInfoFragment"
         android:name="com.myproject.safealarm.feature.missing.each_info.EachInfoFragment"
         android:label="EachInfoFragment" >
+
+        <argument
+            android:name="missingInfo"
+            app:argType="kr.sdbk.domain.model.ward.MissingInfo"/>
         <action
             android:id="@+id/action_eachInfoFragment_to_missingMapFragment"
             app:destination="@id/missingMapFragment" />

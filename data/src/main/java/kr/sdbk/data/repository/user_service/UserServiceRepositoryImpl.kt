@@ -16,4 +16,5 @@ class UserServiceRepositoryImpl(
     override suspend fun getWardInfo(): WardInfoDTO = dataSource.getWardInfo()
     override suspend fun deleteWardInfo() = dataSource.deleteWardInfo()
     override suspend fun postMissing(missingInfo: MissingInfoDTO) = dataSource.postMissing(missingInfo)
+    override suspend fun getMissingList(): List<MissingInfoDTO> = dataSource.getMissingList()
 }

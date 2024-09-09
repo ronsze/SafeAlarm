@@ -50,6 +50,7 @@
     <string name="please_enter_every_info">기타 특징 외에 모든 정보를 입력해주세요.</string>
 
     <string name="post_missing">실종자 정보 게시</string>
+    <string name="missing_info">실종자 정보</string>
 
     <string name="missing_time">실종 시점</string>
     <string name="last_location">마지막 위치</string>

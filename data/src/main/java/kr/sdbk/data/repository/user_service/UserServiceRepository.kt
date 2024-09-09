@@ -13,4 +13,5 @@ interface UserServiceRepository {
     suspend fun getWardInfo(): WardInfoDTO
     suspend fun deleteWardInfo()
     suspend fun postMissing(missingInfo: MissingInfoDTO)
+    suspend fun getMissingList(): List<MissingInfoDTO>
 }

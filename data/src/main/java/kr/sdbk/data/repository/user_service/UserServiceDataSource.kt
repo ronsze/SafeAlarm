@@ -99,4 +99,17 @@ class UserServiceDataSource: UserServiceRepository {
                 .await()
         } ?: throw Exception("Invalid user")
     }
+
+    override suspend fun getMissingList(): List<MissingInfoDTO> {
+        val uid = Firebase.auth.currentUser?.uid
+        val database = Firebase.database.reference
+
+        return uid?.run {
+            database
+                .child(MISSING_TABLE)
+                .get()
+                .await()
+            listOf()
+        } ?: throw Exception("Invalid user")
+    }
 }

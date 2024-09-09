@@ -44,6 +44,7 @@ import com.myproject.safealarm.ui.composable.BaseText
 import com.myproject.safealarm.ui.composable.BaseToolbar
 import com.myproject.safealarm.ui.composable.BaseToolbarDefaults
 import com.myproject.safealarm.ui.composable.HintTextField
+import com.myproject.safealarm.util.getGenderText
 import kr.sdbk.domain.model.Gender
 import kr.sdbk.domain.model.ward.WardInfo
 
@@ -199,11 +200,6 @@ class WardInfoFragment: BaseFragment<WardInfoViewModel>() {
                 }
             }
         }
-    }
-
-    private fun getGenderText(gender: Gender) = when (gender) {
-        Gender.MALE -> R.string.male
-        Gender.FEMALE -> R.string.female
     }
 
     private fun takePhoto(launcher: ActivityResultLauncher<Intent>) {

@@ -8,6 +8,7 @@ import kr.sdbk.data.repository.user_auth.UserAuthRepository
 import kr.sdbk.data.repository.user_service.UserServiceRepository
 import kr.sdbk.data.usecase.user_auth.GetUserUseCaseImpl
 import kr.sdbk.data.usecase.user_service.DeleteWardInfoUseCaseImpl
+import kr.sdbk.data.usecase.user_service.GetMissingListUseCaseImpl
 import kr.sdbk.data.usecase.user_service.GetUserProfileUseCaseImpl
 import kr.sdbk.data.usecase.user_service.GetWardInfoUseCaseImpl
 import kr.sdbk.data.usecase.user_service.PostMissingUseCaseImpl
@@ -46,4 +47,7 @@ class UseCaseModule {
     @Provides
     @Singleton
     fun providesPostMissingUseCase(repository: UserServiceRepository): PostMissingUseCase = PostMissingUseCaseImpl(repository)
+    @Provides
+    @Singleton
+    fun providesGetMissingListUseCase(repository: UserServiceRepository): GetMissingListUseCaseImpl = GetMissingListUseCaseImpl(repository)
 }

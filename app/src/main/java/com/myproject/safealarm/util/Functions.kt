@@ -8,9 +8,11 @@ import android.location.Geocoder
 import android.util.Log
 import com.google.android.gms.common.util.Base64Utils
 import com.myproject.safealarm.App
+import com.myproject.safealarm.R
 import com.naver.maps.geometry.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kr.sdbk.domain.model.Gender
 import java.io.*
 import java.security.*
 import java.security.cert.*
@@ -223,4 +225,9 @@ fun arrayListToBitmap(input: ArrayList<Double>): Bitmap {
     } catch (e: java.lang.Exception) {
         throw RuntimeException(e)
     }
+}
+
+fun getGenderText(gender: Gender) = when (gender) {
+    Gender.MALE -> R.string.male
+    Gender.FEMALE -> R.string.female
 }
