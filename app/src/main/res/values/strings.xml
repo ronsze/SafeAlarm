@@ -58,6 +58,12 @@
     <string name="ward_info_load_failed">피보호자 정보를 받아오지 못했습니다.\n등록하지 않았다면 정보를 등록해주세요.</string>
     <string name="registered">등록되었습니다.</string>
 
+    <string name="change_verification_password">인증 비밀번호 변경</string>
+    <string name="verify_alarm">알림 인증</string>
+
+    <string name="previous_password">이전 비밀번호</string>\
+    <string name="new_password">새 비밀번호</string>
+
     <string name="title_activity_guard_map">GuardMapActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
