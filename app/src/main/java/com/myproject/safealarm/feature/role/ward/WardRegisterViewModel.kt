@@ -2,24 +2,60 @@ package com.myproject.safealarm.feature.role.ward
 
 import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
+import com.myproject.safealarm.util.SocketEvents
+import com.myproject.safealarm.util.SocketEvents.ENTER_ROOM
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kr.sdbk.domain.model.user.UserProfile
+import kr.sdbk.domain.model.user.UserRole
 import kr.sdbk.domain.usecase.user_auth.GetUserUseCase
+import kr.sdbk.domain.usecase.user_service.UpdateUserProfileUseCase
+import java.math.BigInteger
+import java.security.SecureRandom
 import javax.inject.Inject
 
 @HiltViewModel
 class WardRegisterViewModel @Inject constructor(
-    private val getUserUseCase: GetUserUseCase
+    private val getUserUseCase: GetUserUseCase,
+    private val updateUserProfileUseCase: UpdateUserProfileUseCase
 ): BaseViewModel() {
     private val _uiState: MutableStateFlow<WardRegisterUiState> = MutableStateFlow(WardRegisterUiState.Loading)
     val uiState get() = _uiState.asStateFlow()
 
-    fun loadData() {
+    private lateinit var mSocket: Socket
+    private var uid: String = ""
+
+    private lateinit var p: BigInteger
+    private lateinit var g: BigInteger
+    private lateinit var k: BigInteger
+
+    fun connect() {
+        mSocket = IO.socket("").apply {
+            connect()
+            on(Socket.EVENT_CONNECT, onSocketConnected)
+            on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
+            on(SocketEvents.PRIME_NUMBER, onReceivePrimeNumber)
+            on(SocketEvents.SEND_R1, onReceiveR1)
+            on(SocketEvents.KEY_EXCHANGED, onKeyExchanged)
+        }
+    }
+
+    private val onSocketConnected = Emitter.Listener {
+        loadData()
+    }
+
+    private fun loadData() {
         getUserUseCase(
             scope = viewModelScope,
             onSuccess = { user ->
-                user?.run { _uiState.set(WardRegisterUiState.Loaded(uid)) } ?: _uiState.set(WardRegisterUiState.Failed)
+                user?.run {
+                    this@WardRegisterViewModel.uid = uid
+                    mSocket.emit(ENTER_ROOM, uid)
+                } ?: _uiState.set(WardRegisterUiState.Failed)
             },
             onFailure = {
                 _uiState.set(WardRegisterUiState.Failed)
@@ -28,85 +64,48 @@ class WardRegisterViewModel @Inject constructor(
         )
     }
 
-//    private val onReceivePrime = Emitter.Listener{
-//        var msg = it[0].toString().split("9y6s0y9")
-//        var remoteID = msg[0]
-//        val primeMsg = msg[1]
-//        Singleton.server.getCert(remoteID).enqueue(object:Callback<ResponseDC>{
-//            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-//                val certificate = response.body()!!.result!!
-//
-//                Singleton.server.getCRL().enqueue(object:Callback<ResponseDC>{
-//                    override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-//                        val path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-//                        val crl = loadCRL(response.body()!!.result!!, path)
-//                        saveCertificate(certificate, path, crl)
-//                        sendR1(primeMsg)
-//                    }
-//                    override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-//                        Log.e("인증서", "실패")
-//                    }
-//                })
-//            }
-//            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-//                Log.e("인증서", "실패")
-//            }
-//        })
-//    }
-//
-//    private fun sendR1(primeMsg: String){
-//        val primeNum = primeMsg.split("SiGn")[0]
-//        if(checkSign(primeMsg, getPublicKey())){
-//            val primeArr = primeNum.split(".")
-//            this.p = primeArr[0].toBigInteger()
-//            this.g = primeArr[1].toBigInteger()
-//            this.x = getX()
-//            val r1 = g.modPow(x, p)
-//            mSocketR.emit("sendR1", r1.toString()+ getSign(r1.toString()))
-//        }else{
-//            Log.e("서명 sendR1", "서명 불일치")
-//        }
-//    }
-//
-//    private fun getX(): BigInteger {
-//        var x = BigInteger(1024, Random())
-//        while(x > p.subtract(1.toBigInteger())){
-//            x = BigInteger(1024, Random())
-//        }
-//        return x
-//    }
-//
-//    private val onReceiveR2 = Emitter.Listener {
-//        val msg = it[0].toString()
-//        val r2 = msg.split("SiGn")[0].toBigInteger()
-//        if(checkSign(msg, getPublicKey())){
-//            saveShardKey(r2, x)
-//            registGuard()
-//        }else{
-//            Log.e("서명 receiveR2", "서명 불일치")
-//        }
-//    }
-//
-//    private fun saveShardKey(r2: BigInteger, x: BigInteger){
-//        val shardKey = r2.modPow(x, p)
-//        App.prefs.shardKey = shardKey.toString()
-//    }
-//
-//    fun registGuard(){                          //보호자 등록
-//        Singleton.server.registGuard(App.prefs.id).enqueue(object: Callback<ResponseDC> {
-//            override fun onResponse(call: Call<ResponseDC>, response: Response<ResponseDC>) {
-//                Toast.makeText(context, "등록되었습니다.", Toast.LENGTH_SHORT).show()
-//                App.prefs.regKey = true
-//                App.prefs.role = "Guard"
-//                App.prefs.room = App.prefs.id
-//                startForeService()
-//            }
-//
-//            override fun onFailure(call: Call<ResponseDC>, t: Throwable) {
-//                Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-//            }
-//        })
-//    }
+    private val onEnteredRoom = Emitter.Listener {
+        _uiState.set(WardRegisterUiState.Loaded(uid))
+    }
+
+    private val onReceivePrimeNumber = Emitter.Listener {
+        val res = it[0].toString()
+        val arr = res.substring(2, res.length - 2).split(".")
+        p = arr[0].toBigInteger()
+        g = arr[1].toBigInteger()
+    }
+
+    private val onReceiveR1 = Emitter.Listener {
+        val r1 = it[0].toString().toBigInteger()
+        val y = BigInteger(1024, SecureRandom()).mod(p)
+        val r2 = g.modPow(y, p)
+        k = r1.modPow(y, p)
+
+        mSocket.send(SocketEvents.SEND_R2, r2)
+    }
+
+    private val onKeyExchanged = Emitter.Listener {
+        val guardUid = it[0].toString()
+        updateProfile(guardUid)
+    }
+
+    private fun updateProfile(guardUid: String) {
+        val profile = UserProfile(
+            uid = uid,
+            partnerId = guardUid,
+            role = UserRole.WARD
+        )
+        updateUserProfileUseCase(
+            profile = profile,
+            scope = viewModelScope,
+            onSuccess = {
+                _uiState.set(WardRegisterUiState.Connected)
+            },
+            onFailure = {
+
+            }
+        )
+    }
 
     sealed interface WardRegisterUiState {
         data object Loading: WardRegisterUiState

@@ -74,4 +74,7 @@ dependencies {
     implementation(libs.zxing)
     implementation(libs.glide)
     implementation(libs.naver.maps)
+    implementation(libs.socketIO) {
+        exclude(group = "org.json", module = "json")
+    }
 }

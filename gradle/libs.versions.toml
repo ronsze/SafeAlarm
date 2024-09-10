@@ -55,10 +55,9 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx
 firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx" }
 
 zxing = { group = "com.journeyapps", name = "zxing-android-embedded", version = "4.3.0" }
-
 glide = { group = "com.github.bumptech.glide", name = "compose", version = "1.0.0-beta01" }
-
 naver-maps = { group = "com.naver.maps", name = "map-sdk", version = "3.19.1" }
+socketIO = { group = "io.socket", name = "socket.io-client", version = "2.0.0" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

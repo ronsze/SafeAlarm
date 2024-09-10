@@ -24,8 +24,7 @@ class GuardRegisterFragment: BaseFragment<GuardRegisterViewModel>() {
             if (contents[0] != appName) {
                 onFailed(getString(R.string.wrong_qrcode))
             } else {
-//                fragmentViewModel.startDHExchange(result.contents)
-                fragmentViewModel.connect()
+                fragmentViewModel.connect(contents[1])
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.myproject.safealarm.feature.splash
 
 import android.Manifest
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -34,9 +33,7 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
     companion object {
         private val REQUIRED_PERMISSIONS = arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
     }
     override val fragmentViewModel: SplashViewModel by viewModels()
@@ -91,7 +88,7 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val isDenied = permissions.any { !it.value }
-        if (isDenied) {
+        if (!isDenied) {
             fragmentViewModel.checkUser()
         } else {
             toast(getString(R.string.permissions_denied))
