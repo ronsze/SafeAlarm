@@ -99,6 +99,7 @@ class WardRegisterViewModel @Inject constructor(
             profile = profile,
             scope = viewModelScope,
             onSuccess = {
+                mSocket.disconnect()
                 _uiState.set(WardRegisterUiState.Connected)
             },
             onFailure = {

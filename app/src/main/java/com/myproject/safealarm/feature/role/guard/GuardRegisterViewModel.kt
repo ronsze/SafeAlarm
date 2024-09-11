@@ -72,10 +72,10 @@ class GuardRegisterViewModel @Inject constructor(
         p = arr[0].toBigInteger()
         g = arr[1].toBigInteger()
 
-        sendA(p, g)
+        sendR1(p, g)
     }
 
-    private fun sendA(p: BigInteger, g: BigInteger) {
+    private fun sendR1(p: BigInteger, g: BigInteger) {
         val x = BigInteger(1024, SecureRandom()).mod(p)
         val r1 = g.modPow(x, p)
 
@@ -101,6 +101,7 @@ class GuardRegisterViewModel @Inject constructor(
             profile = profile,
             scope = viewModelScope,
             onSuccess = {
+                mSocket.disconnect()
                 _uiState.set(GuardRegisterUiState.Connected)
             },
             onFailure = {
