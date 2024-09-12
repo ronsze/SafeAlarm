@@ -3,6 +3,7 @@ package com.myproject.safealarm.feature.role.guard
 import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
 import com.myproject.safealarm.util.SocketEvents
+import com.myproject.safealarm.util.Values
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -47,7 +48,6 @@ class GuardRegisterViewModel @Inject constructor(
                         connect()
                         on(Socket.EVENT_CONNECT, onSocketConnected)
                         on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
-                        on(SocketEvents.PRIME_NUMBER, onReceivePrimeNumber)
                         on(SocketEvents.SEND_R2, onReceiveR2)
                     }
                 }
@@ -63,14 +63,8 @@ class GuardRegisterViewModel @Inject constructor(
     }
 
     private val onEnteredRoom = Emitter.Listener {
-        mSocket.emit(SocketEvents.SEND_PRIME)
-    }
-
-    private val onReceivePrimeNumber = Emitter.Listener {
-        val res = it[0].toString()
-        val arr = res.substring(2, res.length - 2).split(".")
-        p = arr[0].toBigInteger()
-        g = arr[1].toBigInteger()
+        p = BigInteger(Values.pString, 16)
+        g = BigInteger(Values.gString, 16)
 
         sendR1(p, g)
     }

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
 import com.myproject.safealarm.util.SocketEvents
 import com.myproject.safealarm.util.SocketEvents.ENTER_ROOM
+import com.myproject.safealarm.util.Values
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -38,7 +39,6 @@ class WardRegisterViewModel @Inject constructor(
             connect()
             on(Socket.EVENT_CONNECT, onSocketConnected)
             on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
-            on(SocketEvents.PRIME_NUMBER, onReceivePrimeNumber)
             on(SocketEvents.SEND_R1, onReceiveR1)
             on(SocketEvents.KEY_EXCHANGED, onKeyExchanged)
         }
@@ -54,6 +54,9 @@ class WardRegisterViewModel @Inject constructor(
             onSuccess = { user ->
                 user?.run {
                     this@WardRegisterViewModel.uid = uid
+
+                    p = BigInteger(Values.pString, 16)
+                    g = BigInteger(Values.gString, 16)
                     mSocket.emit(ENTER_ROOM, uid)
                 } ?: _uiState.set(WardRegisterUiState.Failed)
             },
@@ -66,13 +69,6 @@ class WardRegisterViewModel @Inject constructor(
 
     private val onEnteredRoom = Emitter.Listener {
         _uiState.set(WardRegisterUiState.Loaded(uid))
-    }
-
-    private val onReceivePrimeNumber = Emitter.Listener {
-        val res = it[0].toString()
-        val arr = res.substring(2, res.length - 2).split(".")
-        p = arr[0].toBigInteger()
-        g = arr[1].toBigInteger()
     }
 
     private val onReceiveR1 = Emitter.Listener {
