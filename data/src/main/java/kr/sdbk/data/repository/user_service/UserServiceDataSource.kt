@@ -14,12 +14,14 @@ import kotlinx.coroutines.withContext
 import kr.sdbk.data.dto.MissingInfoDTO
 import kr.sdbk.data.dto.UserProfileDTO
 import kr.sdbk.data.dto.WardInfoDTO
+import kr.sdbk.domain.model.ward.WardLocation
 
 class UserServiceDataSource: UserServiceRepository {
     companion object {
         private const val PROFILE_DOCUMENT = "profile"
         private const val WARD_INFO_DOCUMENT = "ward_info"
         private const val MISSING_TABLE = "missing"
+        private const val LOCATION_TABLE = "location_table"
     }
     private val firestore = Firebase.firestore
 
@@ -110,7 +112,36 @@ class UserServiceDataSource: UserServiceRepository {
                 .child(MISSING_TABLE)
                 .get()
                 .await()
+                .children
+                .map { it.getValue(MissingInfoDTO::class.java) }
             listOf()
+        } ?: throw Exception("Invalid user")
+    }
+
+    override suspend fun postWardLocation(wardLocation: WardLocation) {
+        val uid = Firebase.auth.currentUser?.uid
+        val database = Firebase.database.reference
+
+        uid?.run {
+            database
+                .child(LOCATION_TABLE)
+                .child(uid)
+                .setValue(wardLocation)
+                .await()
+        } ?: throw Exception("Invalid user")
+    }
+
+    override suspend fun getWardLocation(): WardLocation {
+        val uid = Firebase.auth.currentUser?.uid
+        val database = Firebase.database.reference
+
+        return uid?.run {
+            database
+                .child(LOCATION_TABLE)
+                .child(uid)
+                .get()
+                .await()
+                .getValue(WardLocation::class.java)
         } ?: throw Exception("Invalid user")
     }
 }
