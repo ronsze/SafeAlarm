@@ -30,8 +30,8 @@ class WardRegisterViewModel @Inject constructor(
     private lateinit var mSocket: Socket
     private var uid: String = ""
 
-    private lateinit var p: BigInteger
-    private lateinit var g: BigInteger
+    private val p: BigInteger = BigInteger(Values.pString, 16)
+    private val g: BigInteger = BigInteger(Values.gString, 16)
     private lateinit var k: BigInteger
 
     fun connect() {
@@ -54,9 +54,6 @@ class WardRegisterViewModel @Inject constructor(
             onSuccess = { user ->
                 user?.run {
                     this@WardRegisterViewModel.uid = uid
-
-                    p = BigInteger(Values.pString, 16)
-                    g = BigInteger(Values.gString, 16)
                     mSocket.emit(ENTER_ROOM, uid)
                 } ?: _uiState.set(WardRegisterUiState.Failed)
             },

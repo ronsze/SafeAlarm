@@ -30,8 +30,8 @@ class GuardRegisterViewModel @Inject constructor(
     private lateinit var wardUid: String
     private var uid: String = ""
 
-    private lateinit var p: BigInteger
-    private lateinit var g: BigInteger
+    private val p: BigInteger = BigInteger(Values.pString, 16)
+    private val g: BigInteger = BigInteger(Values.gString, 16)
     private lateinit var x: BigInteger
     private lateinit var k: BigInteger
 
@@ -63,9 +63,6 @@ class GuardRegisterViewModel @Inject constructor(
     }
 
     private val onEnteredRoom = Emitter.Listener {
-        p = BigInteger(Values.pString, 16)
-        g = BigInteger(Values.gString, 16)
-
         sendR1(p, g)
     }
 
