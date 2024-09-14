@@ -2,6 +2,7 @@ package com.myproject.safealarm.feature.role.guard
 
 import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
+import com.myproject.safealarm.util.Secret
 import com.myproject.safealarm.util.SocketEvents
 import com.myproject.safealarm.util.Values
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,7 +45,7 @@ class GuardRegisterViewModel @Inject constructor(
             onSuccess = { user ->
                 user?.uid?.run {
                     this@GuardRegisterViewModel.uid = this
-                    mSocket = IO.socket("").apply {
+                    mSocket = IO.socket(Secret.SOCKET_URL).apply {
                         connect()
                         on(Socket.EVENT_CONNECT, onSocketConnected)
                         on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
