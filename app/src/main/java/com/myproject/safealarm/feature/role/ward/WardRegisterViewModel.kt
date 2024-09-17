@@ -1,8 +1,8 @@
 package com.myproject.safealarm.feature.role.ward
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
-import com.myproject.safealarm.util.Secret
 import com.myproject.safealarm.util.SocketEvents
 import com.myproject.safealarm.util.SocketEvents.ENTER_ROOM
 import com.myproject.safealarm.util.Values
@@ -17,8 +17,10 @@ import kr.sdbk.domain.model.user.UserRole
 import kr.sdbk.domain.usecase.user_auth.GetUserUseCase
 import kr.sdbk.domain.usecase.user_service.UpdateUserProfileUseCase
 import java.math.BigInteger
+import java.net.URISyntaxException
 import java.security.SecureRandom
 import javax.inject.Inject
+
 
 @HiltViewModel
 class WardRegisterViewModel @Inject constructor(
@@ -36,8 +38,14 @@ class WardRegisterViewModel @Inject constructor(
     private lateinit var k: BigInteger
 
     fun connect() {
-        mSocket = IO.socket(Secret.SOCKET_URL).apply {
-            connect()
+        try {
+            mSocket = IO.socket(Values.BASE_URL)
+            mSocket.connect()
+        } catch (e: URISyntaxException) {
+            Log.e("ee", e.message.toString())
+        }
+
+        with(mSocket) {
             on(Socket.EVENT_CONNECT, onSocketConnected)
             on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
             on(SocketEvents.SEND_R1, onReceiveR1)
@@ -46,6 +54,7 @@ class WardRegisterViewModel @Inject constructor(
     }
 
     private val onSocketConnected = Emitter.Listener {
+        Log.e("qweqwe", "Connected")
         loadData()
     }
 
@@ -100,6 +109,11 @@ class WardRegisterViewModel @Inject constructor(
 
             }
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mSocket.close()
     }
 
     sealed interface WardRegisterUiState {

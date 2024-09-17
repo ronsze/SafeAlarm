@@ -1,6 +1,7 @@
 package com.myproject.safealarm.util
 
 object Values {
+    const val BASE_URL = "https://graceful-collen-sdbk-bb06e78a.koyeb.app/"
     const val pString = "fd7f5381" +
             "1d751229" +
             "52df4a9c" +

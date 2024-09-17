@@ -4,9 +4,11 @@ import android.content.Context
 import android.location.Geocoder
 import com.myproject.safealarm.R
 import com.naver.maps.geometry.LatLng
+import io.socket.client.IO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kr.sdbk.domain.model.Gender
+import okhttp3.OkHttpClient
 import java.io.IOException
 import java.util.*
 
@@ -114,4 +116,15 @@ suspend fun textToLocation(text: String, context: Context): LatLng? {        // 
 fun getGenderText(gender: Gender) = when (gender) {
     Gender.MALE -> R.string.male
     Gender.FEMALE -> R.string.female
+}
+
+fun getSocketOptions(): IO.Options {
+    val opts = IO.Options()
+    val okhttpClient = OkHttpClient().newBuilder().build()
+    IO.setDefaultOkHttpWebSocketFactory(okhttpClient)
+    IO.setDefaultOkHttpCallFactory(okhttpClient)
+    opts.callFactory = okhttpClient
+    opts.webSocketFactory = okhttpClient
+
+    return opts
 }

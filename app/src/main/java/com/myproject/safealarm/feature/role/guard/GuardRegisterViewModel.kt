@@ -1,8 +1,8 @@
 package com.myproject.safealarm.feature.role.guard
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.myproject.safealarm.base.BaseViewModel
-import com.myproject.safealarm.util.Secret
 import com.myproject.safealarm.util.SocketEvents
 import com.myproject.safealarm.util.Values
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +16,7 @@ import kr.sdbk.domain.model.user.UserRole
 import kr.sdbk.domain.usecase.user_auth.GetUserUseCase
 import kr.sdbk.domain.usecase.user_service.UpdateUserProfileUseCase
 import java.math.BigInteger
+import java.net.URISyntaxException
 import java.security.SecureRandom
 import javax.inject.Inject
 
@@ -45,18 +46,28 @@ class GuardRegisterViewModel @Inject constructor(
             onSuccess = { user ->
                 user?.uid?.run {
                     this@GuardRegisterViewModel.uid = this
-                    mSocket = IO.socket(Secret.SOCKET_URL).apply {
-                        connect()
-                        on(Socket.EVENT_CONNECT, onSocketConnected)
-                        on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
-                        on(SocketEvents.SEND_R2, onReceiveR2)
-                    }
+                    connect()
                 }
             },
             onFailure = {
 
             }
         )
+    }
+
+    private fun connect() {
+        try {
+            mSocket = IO.socket(Values.BASE_URL)
+            mSocket.connect()
+        } catch (e: URISyntaxException) {
+            Log.e("ee", e.message.toString())
+        }
+
+        with(mSocket) {
+            on(Socket.EVENT_CONNECT, onSocketConnected)
+            on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
+            on(SocketEvents.SEND_R2, onReceiveR2)
+        }
     }
 
     private val onSocketConnected = Emitter.Listener {
@@ -100,6 +111,11 @@ class GuardRegisterViewModel @Inject constructor(
 
             }
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mSocket.close()
     }
 
     sealed interface GuardRegisterUiState {
