@@ -1,3 +1,6 @@
+server
+https://github.com/ronsze/safeme-server
+
 <H1>소개</H1>
 SafeAlarm은 미아 방지를 위해 보호자와 피보호자 기기에 설치하여             
 
