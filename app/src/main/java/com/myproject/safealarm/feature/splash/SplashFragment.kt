@@ -1,6 +1,7 @@
 package com.myproject.safealarm.feature.splash
 
 import android.Manifest
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -89,10 +90,11 @@ class SplashFragment : BaseFragment<SplashViewModel>() {
     private val permissionRequestLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val isDenied = permissions.any { !it.value }
-        if (!isDenied) {
+        val isDenied = permissions.filter { !it.value }
+        if (isDenied.isEmpty()) {
             fragmentViewModel.checkUser()
         } else {
+            Log.e("qweqwe", "${isDenied}")
             toast(getString(R.string.permissions_denied))
             exitProcess(0)
         }
