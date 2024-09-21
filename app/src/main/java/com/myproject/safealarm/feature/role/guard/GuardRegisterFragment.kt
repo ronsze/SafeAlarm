@@ -1,7 +1,11 @@
 package com.myproject.safealarm.feature.role.guard
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -31,6 +35,15 @@ class GuardRegisterFragment: BaseFragment<GuardRegisterViewModel>() {
 
     @Composable
     override fun Root() {
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(key1 = lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_CREATE) fragmentViewModel.loadData()
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+
         val uiState = fragmentViewModel.uiState.collectAsStateWithLifecycle().value
         when (uiState) {
             GuardRegisterViewModel.GuardRegisterUiState.QRScanning -> scanQRCode()

@@ -32,6 +32,8 @@ class GuardViewModel @Inject constructor(
             } else {
                 with (mSocket) {
                     connect()
+
+                    val
                     on(Socket.EVENT_CONNECT, onConnected)
                     on(SocketEvents.ENTERED_ROOM, onEnteredRoom)
                 }
@@ -51,6 +53,10 @@ class GuardViewModel @Inject constructor(
 
             }
         )
+    }
+
+    private fun handshake() {
+        mSocket.
     }
 
     private val onEnteredRoom = Emitter.Listener {
