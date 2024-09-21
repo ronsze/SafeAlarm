@@ -48,7 +48,7 @@ class SplashViewModel @Inject constructor(
         profile: UserProfile
     ) {
         when {
-            profile.partnerId != null -> _uiState.set(SplashUiState.Connected(profile.role!!))
+            profile.role != null -> _uiState.set(SplashUiState.Connected(profile.role!!))
             else -> _uiState.set(SplashUiState.RoleSelect)
         }
     }
