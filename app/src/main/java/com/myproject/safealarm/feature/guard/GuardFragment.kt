@@ -5,9 +5,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myproject.safealarm.R
 import com.myproject.safealarm.base.BaseFragment
 import com.myproject.safealarm.ui.composable.MenuCard
@@ -17,6 +24,25 @@ class GuardFragment: BaseFragment<GuardViewModel>() {
 
     @Composable
     override fun Root() {
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val uiState by fragmentViewModel.uiState.collectAsStateWithLifecycle()
+
+        DisposableEffect(key1 = lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_CREATE && uiState != GuardViewModel.GuardUiState.Connected) fragmentViewModel.connect()
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+
+        when (uiState) {
+            GuardViewModel.GuardUiState.Loading -> LoadingView()
+            GuardViewModel.GuardUiState.Connected -> View()
+        }
+    }
+
+    @Composable
+    private fun View() {
         LazyVerticalGrid(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -71,4 +97,10 @@ class GuardFragment: BaseFragment<GuardViewModel>() {
     private fun navigateToMissingInfo() = navigateTo(GuardFragmentDirections.actionGuardFragmentToMissingNav())
     private fun navigateToAlarm() = navigateTo(GuardFragmentDirections.actionGuardFragmentToAlarmFragment())
     private fun navigateToSetting() = navigateTo(GuardFragmentDirections.actionGuardFragmentToGuardSetting())
+
+    @Preview
+    @Composable
+    private fun Preview() {
+        View()
+    }
 }

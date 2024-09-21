@@ -30,7 +30,7 @@ fun MenuCard(
 ) {
     Column(
         modifier = Modifier
-            .background(Color.Black, RoundedCornerShape(15.dp))
+            .background(Color.White, RoundedCornerShape(15.dp))
             .clickable { onClick() }
             .padding(horizontal = 10.dp)
     ) {
