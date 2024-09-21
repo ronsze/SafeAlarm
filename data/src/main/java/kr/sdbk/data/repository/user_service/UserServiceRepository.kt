@@ -15,7 +15,4 @@ interface UserServiceRepository {
 
     suspend fun postMissing(missingInfo: MissingInfoDTO)
     suspend fun getMissingList(): List<MissingInfoDTO>
-
-    suspend fun postWardLocation(wardLocation: WardLocation)
-    suspend fun getWardLocation(): WardLocation
 }

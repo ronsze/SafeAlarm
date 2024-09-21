@@ -117,31 +117,4 @@ class UserServiceDataSource: UserServiceRepository {
             listOf()
         } ?: throw Exception("Invalid user")
     }
-
-    override suspend fun postWardLocation(wardLocation: WardLocation) {
-        val uid = Firebase.auth.currentUser?.uid
-        val database = Firebase.database.reference
-
-        uid?.run {
-            database
-                .child(LOCATION_TABLE)
-                .child(uid)
-                .setValue(wardLocation)
-                .await()
-        } ?: throw Exception("Invalid user")
-    }
-
-    override suspend fun getWardLocation(): WardLocation {
-        val uid = Firebase.auth.currentUser?.uid
-        val database = Firebase.database.reference
-
-        return uid?.run {
-            database
-                .child(LOCATION_TABLE)
-                .child(uid)
-                .get()
-                .await()
-                .getValue(WardLocation::class.java)
-        } ?: throw Exception("Invalid user")
-    }
 }

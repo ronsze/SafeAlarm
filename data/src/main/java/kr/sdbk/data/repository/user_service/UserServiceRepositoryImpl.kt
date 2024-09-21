@@ -21,7 +21,4 @@ class UserServiceRepositoryImpl @Inject constructor(
 
     override suspend fun postMissing(missingInfo: MissingInfoDTO) = dataSource.postMissing(missingInfo)
     override suspend fun getMissingList(): List<MissingInfoDTO> = dataSource.getMissingList()
-
-    override suspend fun postWardLocation(wardLocation: WardLocation) = dataSource.postWardLocation(wardLocation)
-    override suspend fun getWardLocation(): WardLocation = dataSource.getWardLocation()
 }
