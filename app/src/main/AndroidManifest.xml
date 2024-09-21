@@ -26,11 +26,9 @@
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
         <service
-            android:name=".service.ForegroundService"
-            android:enabled="true"
-            android:exported="true"
-            android:foregroundServiceType="location"
-            tools:ignore="ForegroundServicePermission" />
+            android:name=".service.WardLocationService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <activity
             android:name=".feature.main.MainActivity"

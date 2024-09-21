@@ -38,7 +38,7 @@ class WardRegisterFragment: BaseFragment<WardRegisterViewModel>() {
         val lifecycleOwner = LocalLifecycleOwner.current
         DisposableEffect(key1 = lifecycleOwner) {
             val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_CREATE) fragmentViewModel.connect()
+                if (event == Lifecycle.Event.ON_CREATE) fragmentViewModel.loadData()
             }
             lifecycleOwner.lifecycle.addObserver(observer)
             onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
